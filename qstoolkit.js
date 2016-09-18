@@ -620,6 +620,12 @@ var q = (function() {
     get: function(key) {
       return localStorage.getItem(key);
     },
+    setup: function(options) {
+      var keys = options.getKeys();
+      for(var i=0; i<keys.length; i++) {
+        qsettings[keys[i]] = options[keys[i]];
+      }
+    },
     async: function() {
       setTimeout.apply(undefined, arguments);
     },
