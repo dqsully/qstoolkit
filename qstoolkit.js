@@ -551,8 +551,8 @@ var qc = (function() {
   function qc(selector, extraTime, searchIn) {
     extraTime = extraTime || 0;
     //searchIn Validation and Formatting
-    var search = (searchIn || document);
-    if(searchIn && !q.isem(searchIn)) throw new TypeError(qs.eNd);
+    var search = ((searchIn instanceof qelement ? searchIn.em : searchIn) || document);
+    if(searchIn && !qelement.isem(searchIn)) throw new TypeError(qs.eNd);
     //Cache
     for(var i=0; i<cache.length; i++) {
       if(cache[i].selector == selector && (searchIn || document) == cache[i].searchIn) return cache[i].element;
@@ -634,7 +634,7 @@ var q = (function() {
     },
     log: function() {
       var line = q.lineNumber(1);
-      var args = Array.prototype.unshift.call(arguments, line.file + ':' + line.line + ' :');
+      var args = Array.prototype.unshift.call(arguments, line.file + ':' + line.line + ':');
       console.log.apply(undefined, arguments);
       return arguments[1];
     },
@@ -867,7 +867,7 @@ var q = (function() {
         str += '];';
 
         // Validate for current version
-        str += (i > 0 ? 'else ' : '') + 'if(';
+        str += 'if(';
         conds = 0;
         if(v.testfor) {
 
@@ -1006,7 +1006,7 @@ var qelement = (function() {
   }
   function css(a, y) {
     if(!q.is(a)) return '';
-    return (typeof(a) == qs.tn ? a + qsettings.defaultCSSUnits.length : a.trim());
+    return (typeof(a) == qs.tn ? a.toFixed(3) + qsettings.defaultCSSUnits.length : a.trim());
   }
   qelement.extend({
     fromNodes: function(nodelist) {
@@ -1282,10 +1282,10 @@ var qelement = (function() {
       return s || this;
     },
     previousSibling: { get: function() {
-       return newq(this.em.previousSibling());
+       return newq(this.em.previousElementSibling);
     } },
     nextSibling: { get: function() {
-      return newq(this.em.nextSibling());
+      return newq(this.em.nextElementSibling);
     } },
     remove: function(child) {
       if(qelement.is(child)) {
