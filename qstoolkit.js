@@ -311,6 +311,7 @@ var qsettings = {
     length: 'px',
     angle: 'deg',
   },
+  bezierAccuracy: 15, // 2^-n tolerance
   cacheLength: 10, // Max Items
   cacheTimeout: 100, // Milliseconds
   cacheGCInterval: 1000, // Milliseconds
@@ -603,6 +604,15 @@ var q = (function() {
     return new qlist(results);
   }
 
+  function bezier(t, x1, y1, x2, y2) {
+    return {
+      x: 3*t*(x1+t*(x2-2*x1+t*(1/3+x1-x2))),
+      y: 3*t*(y1+t*(y2-2*y1+t*(1/3+y1-y2)))
+    }
+  }
+  var detect;
+
+  // From ellisbben (StackOverflow)
   q.extend({
     set: function(key, value) {
       localStorage.setItem(key, value || '');
@@ -895,7 +905,75 @@ var q = (function() {
 
       func[options.name] = new Function(str);
       q.extend(func);
-    }
+    },
+    CSSTimingFunctions: {
+      'ease':       [0.25, 0.1,  0.25, 1   ],
+      'linear':     [0,    0,    1,    1   ],
+      'ease-in':    [0.42, 0,    1,    1   ],
+      'ease-out':   [0,    0,    0.58, 1   ],
+      'ease-in-out':[0.42, 0,    0.58, 1   ],
+    },
+    // x1, y1, x2, y2, interval, onEnd
+    bezierAnimation: function(callback, duration, options) {
+      var x1, y1, x2, y2, interval, onEnd;
+      function getAnimFunc(name) {
+        x1 = q.CSSTimingFunctions[name][0], y1 = q.CSSTimingFunctions[name][1], x2 = q.CSSTimingFunctions[name][2], y2 = q.CSSTimingFunctions[name][3];
+      }
+
+      // Setup ease values
+      if('x1' in options && 'y1' in options && 'x2' in options && 'y2' in options)
+        x1 = options.x1, y1 = options.y1, x2 = options.x2, y2 = options.y2;
+      else if(!('timingFunction' in options))
+        getAnimFunc('ease');
+      else if(!(options.timingFunction in q.CSSTimingFunctions))
+        throw new TypeError('Animation function not predefined');
+      else
+        getAnimFunc(options.timingFunction);
+
+      if('interval' in options && typeof(options.interval) == qs.tn)
+        interval = options.interval;
+
+      if('onend' in options && typeof(options.onend) == qs.tf)
+        onEnd = options.onend;
+
+      if(x1 < 0 || x1 > 1 || x2 < 0 || x2 > 1) throw new RangeError('X value(s) must be between 0 through 1');
+      if(typeof(duration) != qs.tn) throw new TypeError('duration not a number');
+      if(typeof(callback) != qs.tf) throw new TypeError('callback not a function');
+
+      var s = performance.now(), cancel = false;
+
+      function int() {
+        if(cancel) return;
+        var t = (performance.now() - s) / duration; // time passed
+        if(t > 1) {
+          callback(1);
+          if(onEnd) onEnd();
+          return;
+        }
+
+        var blow = 0, bhigh = 1, bmid, fout, num = qsettings.bezierAccuracy, tol = Math.pow(2, -num);
+        for(var i=0; i<num; i++) {
+          bmid = (blow + bhigh)/2;
+          fout = bezier(bmid, x1, y1, x2, y2);
+          if(Math.abs(fout.x - t) <= tol) break;
+          if(fout.x < t) blow = bmid;
+          else bhigh = bmid;
+        }
+        callback(fout.y);
+        if(interval) setTimeout(int, interval);
+        else requestAnimationFrame(int);
+      }
+
+      if(interval) setTimeout(int, interval);
+      else requestAnimationFrame(int);
+      return function() {
+        cancel = true;
+      }
+    },
+    isCSSValueSupported: function(property, value) {
+      if(!detect) detect = newq('d');
+      return detect.style(property, value).style(property) == value;
+    },
   });
 
   // Generate css functions
