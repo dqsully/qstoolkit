@@ -754,91 +754,6 @@ var q = (function() {
       }
       return callback;
     },
-    // //CSS Functions
-    // matrix: function(a, b, c, d, tx, ty) {
-    //   if(!q.is(a, b, c, d, tx, ty)) throw new ReferenceError(qs.eNEA);
-    //   return 'matrix(' + css(a) + ncss(b) + ncss(c) + ncss(d) + ncss(tx) + ncss(ty) + ')';
-    // },
-    // matrix3d: function(a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4) {
-    //   if(!q.is(a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4)) throw new ReferenceError(qs.eNEA);
-    //   return 'matrix3d(' + css(a1) + ncss(b1) + ncss(c1) + ncss(d1) + ncss(a2) + ncss(b2) + ncss(c2) + ncss(d2) + ncss(a3) + ncss(b3) + ncss(c3) + ncss(d3) + ncss(a4) + ncss(b4) + ncss(c4) + ncss(d4) + ')';
-    // },
-    // perspective: function(l) {
-    //   if(!q.is(l)) throw new ReferenceError(qs.eNEA);
-    //   return 'perspective(' + l + ')';
-    // },
-    // rotate: function(a, unit) {
-    //   if(!q.is(a)) throw new ReferenceError(qs.eNEA);
-    //   return 'rotate(' + a + ang(unit) + ')';
-    // },
-    // rotate3d: function(x, y, z, a, unit) {
-    //   if(!q.is(x, y, z, a)) throw new ReferenceError(qs.eNEA);
-    //   return 'rotate3d(' + x + ', ' + y + ', ' + z + ', ' + a + ang(unit) + ')';
-    // },
-    // rotatex: function(a, unit) {
-    //   if(!q.is(a)) throw new ReferenceError(qs.eNEA);
-    //   return 'rotatex(' + x + ang(unit) + ')';
-    // },
-    // rotatey: function(a, unit) {
-    //   if(!q.is(a)) throw new ReferenceError(qs.eNEA);
-    //   return 'rotatey(' + x + ang(unit) + ')';
-    // },
-    // rotatez: function(a, unit) {
-    //   if(!q.is(a)) throw new ReferenceError(qs.eNEA);
-    //   return 'rotatez(' + x + ang(unit) + ')';
-    // },
-    // scale: function(sx, sy) {
-    //   if(!q.is(sx)) throw new ReferenceError(qs.eNEA);
-    //   return 'scale(' + sx + (q.is(sy) ? ', ' + sy : '') + ')';
-    // },
-    // scale3d: function(sx, sy, sz) {
-    //   if(!q.is(sx, sy, sz)) throw new ReferenceError(qs.eNEA);
-    //   return 'scale3d(' + sx + ', ' + sy + ', ' + sz + ')';
-    // },
-    // scalex: function(sx) {
-    //   if(!q.is(sx)) throw new ReferenceError(qs.eNEA);
-    //   return 'scalex(' + sx + ')';
-    // },
-    // scaley: function(sy) {
-    //   if(!q.is(sy)) throw new ReferenceError(qs.eNEA);
-    //   return 'scalex(' + sy + ')';
-    // },
-    // scalez: function(sz) {
-    //   if(!q.is(sz)) throw new ReferenceError(qs.eNEA);
-    //   return 'scalex(' + sz + ')';
-    // },
-    // skew: function(ax, ay, unitx, unity) {
-    //   if(!q.is(ax)) throw new ReferenceError(qs.eNEA);
-    //   return 'skew(' + ax + ang(unitx) + (q.is(ay) ? ', ' + ay + ang(unity) : '') + ')';
-    // },
-    // skewx: function(ax, unitx) {
-    //   if(!q.is(ax)) throw new ReferenceError(qs.eNEA);
-    //   return 'skew(' + ax + ang(unitx) + ')';
-    // },
-    // skewy: function(ay, unitx) {
-    //   if(!q.is(ay)) throw new ReferenceError(qs.eNEA);
-    //   return 'skew(' + ay + ang(unity) + ')';
-    // },
-    // translate: function(tx, ty) {
-    //   if(!q.is(tx)) throw new ReferenceError(qs.eNEA);
-    //   return 'translate(' + css(tx) + (q.is(ty) ?  ncss(ty) : '') + ')';
-    // },
-    // translate3d: function(tx, ty, tz) {
-    //   if(!q.is(tx)) throw new ReferenceError(qs.eNEA);
-    //   return 'translate3d(' + css(tx) + (q.is(ty) ? ncss(ty) : '') + (q.is(tz) ? ncss(tz) : '') + ')';
-    // },
-    // translatex: function(tx) {
-    //   if(!q.is(tx)) throw new ReferenceError(qs.eNEA);
-    //   return 'translatex(' + css(tx) + ')';
-    // },
-    // translatey: function(ty) {
-    //   if(!q.is(ty)) throw new ReferenceError(qs.eNEA);
-    //   return 'translatey(' + css(ty) + ')';
-    // },
-    // translatez: function(tz) {
-    //   if(!q.is(tz)) throw new ReferenceError(qs.eNEA);
-    //   return 'translatez(' + css(tz) + ')';
-    // }
     generateCSSFunction: function(options) {
       /*Options
         - {} options
@@ -983,7 +898,217 @@ var q = (function() {
   });
 
   // Generate css functions
-  []
+  [
+    {
+      name: 'matrix',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 0 ],
+        },
+        {
+          testfor: { numArguments: 6 },
+          argumentTypes: [ 0, 0, 0, 0, 0, 0 ]
+        }
+      ]
+    },
+    {
+      name: 'translate',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 4 ]
+        },
+        {
+          testfor: { numArguments: 2 },
+          argumentTypes: [ 4, 4 ]
+        }
+      ]
+    },
+    {
+      name: 'translateX',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 4 ]
+        }
+      ]
+    },
+    {
+      name: 'translateY',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 4 ]
+        }
+      ]
+    },
+    {
+      name: 'scale',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 0 ]
+        },
+        {
+          testfor: { numArguments: 2 },
+          argumentTypes: [ 0, 0 ]
+        }
+      ]
+    },
+    {
+      name: 'scaleX',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 0 ]
+        }
+      ]
+    },
+    {
+      name: 'scaleY',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 0 ]
+        }
+      ]
+    },
+    {
+      name: 'rotate',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 1 ]
+        }
+      ]
+    },
+    {
+      name: 'skew',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 1 ]
+        },
+        {
+          testfor: { numArguments: 2 },
+          argumentTypes: [ 1, 1 ]
+        }
+      ]
+    },
+    {
+      name: 'skewX',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 1 ]
+        }
+      ]
+    },
+    {
+      name: 'skewY',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 1 ]
+        }
+      ]
+    },
+    {
+      name: 'matrix3d',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 0 ]
+        },
+        {
+          testfor: { numArguments: 16 },
+          argumentTypes: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+        }
+      ]
+    },
+    {
+      name: 'translate3d',
+      versions: [
+        {
+          testfor: { numArguments: 3 },
+          argumentTypes: [ 4, 4, 2 ]
+        }
+      ]
+    },
+    {
+      name: 'translateZ',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 2 ]
+        }
+      ]
+    },
+    {
+      name: 'scale3d',
+      versions: [
+        {
+          testfor: { numArguments: 3 },
+          argumentTypes: [ 0, 0, 0 ]
+        }
+      ]
+    },
+    {
+      name: 'scaleZ',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 0 ]
+        }
+      ]
+    },
+    {
+      name: 'rotate3d',
+      versions: [
+        {
+          testfor: { numArguments: 4 },
+          argumentTypes: [ 0, 0, 0, 1 ]
+        }
+      ]
+    },
+    {
+      name: 'rotateX',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 1 ]
+        }
+      ]
+    },
+    {
+      name: 'rotateY',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 1 ]
+        }
+      ]
+    },
+    {
+      name: 'rotateZ',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 1 ]
+        }
+      ]
+    },
+    {
+      name: 'perspective',
+      versions: [
+        {
+          testfor: { numArguments: 1 },
+          argumentTypes: [ 2 ]
+        }
+      ]
+    }
+  ].foreach(q.generateCSSFunction);
 
   return q;
 })();
