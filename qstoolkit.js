@@ -167,7 +167,7 @@ Object.prototype.for = function(start, end, func) {
 Object.prototype.foreach = function(func) {
   var keys = this.getKeys();
   for(var i=0; i<keys.length; i++) {
-    func(keys[i], this, i);
+    func(this[keys[i]], this, keys[i]);
   }
   return this;
 }
