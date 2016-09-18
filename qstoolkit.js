@@ -585,9 +585,9 @@ var qc = (function() {
 })();
 var q = (function() {
   var sbarWidth, oref = 0;
-  function q(selector, searchIn) {
+  function q(selector, searchIn, forceList) {
     //searchIn Validation and Formatting
-    var search = searchIn || document;
+    var search = ((searchIn instanceof qelement ? searchIn.em : searchIn) || document);
     if(searchIn && !qelement.isem(searchIn)) throw new TypeError(qs.eNd);
     //Validation and qelement creation
     if(selector instanceof HTMLElement) return newq(selector);
@@ -597,6 +597,7 @@ var q = (function() {
     if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fId)) return newq(search.getElementById(selector.substr(1)));
     //Querying
     var results = search.querySelectorAll(selector);
+    if(forceList) return new qlist(results);
     if(results.length == 0) return null;
     if(results.length == 1) return newq(results[0]);
     return new qlist(results);
