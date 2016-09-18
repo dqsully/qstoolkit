@@ -1154,7 +1154,7 @@ var qelement = (function() {
     }
   });
   //TODO: add a function call limiter that can add values and run on different intervals (# or animationFrame)
-  var onextensions = {
+  qelement.onextensions = {
     resize: function(me, ev) {
       var style = {
         position: 'absolute',
@@ -1235,10 +1235,10 @@ var qelement = (function() {
         }
         return this;
       }
-      var found = name in onextensions;
+      var found = name in qelement.onextensions;
       if(!(name in this.em.events)) {
         this.em.events[name] = new qevent(found ? {} : {'attachTo': this, 'name': name});
-        if(found) this.em.devents[name] = onextensions[name](this, this.em.events[name]);
+        if(found) this.em.devents[name] = qelement.onextensions[name](this, this.em.events[name]);
       }
       if(!q.is(func)) return this.em.events[name];
       if(callNow) func();
