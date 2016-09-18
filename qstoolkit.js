@@ -1572,12 +1572,19 @@ var qelement = (function() {
       }
       return this;
     },
-    scrollTop: { get: function() {
-      return this.em.scrollTop;
-    } },
+    scroll: function(x, y) {
+      if(!q.is(x) && !q.is(y)) return {x: this.em.scrollLeft, y: this.em.scrollTop};
+      if(x != null) this.em.scrollLeft = x;
+      if(y != null) this.em.scrollTop = y;
+      return this;
+    },
     clientRect: { get: function() {
       return this.em.getBoundingClientRect();
     } },
+    offsetTop: { get: function() { return this.em.offsetTop; } },
+    offsetBottom: { get: function() { return this.em.offsetBottom; } },
+    offsetLeft: { get: function() { return this.em.offsetLeft; } },
+    offsetRight: { get: function() { return this.em.offsetRight; } },
   });
   //Aliases
   //TODO: finish aliases
