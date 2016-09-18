@@ -1,5 +1,5 @@
 /*
-  Q's JavaScript Toolkit v0.4.0
+  Q's JavaScript Toolkit v0.4.2
   A generic alternative to jQuery, allowing some amazing chaining.
   Instructions for compressing:
     Make sure all functions have aliases
