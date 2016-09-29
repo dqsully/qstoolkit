@@ -1,1 +1,1 @@
-QsJS
+# Q's JS Toolkit
