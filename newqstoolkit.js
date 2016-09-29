@@ -1,5 +1,5 @@
 /*
-  Q's JavaScript Toolkit v1.0.1b
+  Q's JavaScript Toolkit v1.0.2b
   A generic alternative to jQuery, allowing some amazing chaining.
   Instructions for compressing:
     Make sure all functions have aliases
@@ -1713,26 +1713,60 @@ var qelement = (function() {
   // TODO: Aliases
   qelement.prototype.extend({
     c: qelement.prototype.children,
-    a: qelement.prototype.append,
-    cls: qelement.prototype.classes,
-    cl: qelement.prototype.class,
-    i: qelement.prototype.insertAt,
-    t: qelement.prototype.text,
+    cc: {get:function(){return this.em.children.length}},
+    hc: {get:function(){return this.em.children.length > 0}},
+
     fc: {get:function(){return newq(this.em.firstElementChild)}},
     lc: {get:function(){return newq(this.em.lastElementChild)}},
     fnc: {get:function(){return newq(this.em.firstChild)}},
     lnc: {get:function(){return newq(this.em.lastChild)}},
-    h: {get:function(){return newq(this.em.offsetHeight)}},
-    w: {get:function(){return newq(this.em.offsetWidth)}},
+
+    p: {get:function(){return newq(this.em.parentElement)}},
+    pn: {get:function(){return newq(this.em.parentNode)}},
+
+    ns: {get:function(){return newq(this.em.nextElementSibling)}},
+    nns: {get:function(){return newq(this.em.nextSibling)}},
+    ps: {get:function(){return newq(this.em.previousElementSibling)}},
+    pns: {get:function(){return newq(this.em.previousSibling)}},
+
+    a: qelement.prototype.append,
+    rm: qelement.prototype.remove,
+    d: qelement.prototype.detach,
+    i: qelement.prototype.insertAt,
+
+    cls: qelement.prototype.classes,
+    cl: qelement.prototype.class,
     tcl: qelement.prototype.togClass,
     acl: qelement.prototype.addClass,
     rcl: qelement.prototype.remClass,
-    p: {get:function(){return newq(this.em.parentElement)}},
-    pn: {get:function(){return newq(this.em.parentNode)}},
-    d: qelement.prototype.detach,
-    rm: qelement.prototype.remove,
+
+    t: qelement.prototype.text,
     s: qelement.prototype.style,
+    cs: qelement.prototype.computedStyle,
+    at: qelement.prototype.attr,
+
+    f: qelement.prototype.focus,
+    b: qelement.prototype.blur,
+
     sel: qelement.prototype.selected,
+    cur: qelement.prototype.cursor,
+    v: qelement.prototype.validity,
+
+    h: {get:function(){return this.em.offsetHeight}},
+    w: {get:function(){return this.em.offsetWidth}},
+    ch: {get:function(){return this.em.clientHeight}},
+    cw: {get:function(){return this.em.clientWidth}},
+    oh: {get:function(){return this.outerHeight}},
+    ow: {get:function(){return this.outerWidth}},
+
+    ot: {get:function(){return this.em.offsetTop}},
+    ob: {get:function(){return this.em.offsetBottom}},
+    or: {get:function(){return this.em.offsetRight}},
+    ol: {get:function(){return this.em.offsetLeft}},
+    cr: {get:function(){return this.em.getBoundingClientRect()}},
+
+    he: qelement.prototype.hasExtension,
+    ee: qelement.prototype.extendEm,
   });
 
   return qelement;
