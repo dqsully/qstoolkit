@@ -1235,10 +1235,10 @@ var qelement = (function() {
         }
         return this;
       }
-      var found = name in qelement.onextensions;
+      var isAnExtension = name in qelement.onextensions;
       if(!(name in this.em.events)) {
-        this.em.events[name] = new qevent(found ? {} : {'attachTo': this, 'name': name});
-        if(found) this.em.devents[name] = qelement.onextensions[name](this, this.em.events[name]);
+        this.em.events[name] = new qevent(isAnExtension ? {} : {'attachTo': this, 'name': name});
+        if(isAnExtension) this.em.devents[name] = qelement.onextensions[name](this, this.em.events[name]);
       }
       if(!q.is(func)) return this.em.events[name];
       if(callNow) func();
