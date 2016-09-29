@@ -1,5 +1,5 @@
 /*
-  Q's JavaScript Toolkit v1.0.0b
+  Q's JavaScript Toolkit v1.0.1b
   A generic alternative to jQuery, allowing some amazing chaining.
   Instructions for compressing:
     Make sure all functions have aliases
@@ -2111,12 +2111,12 @@ q.onready(function() {
 
 document.addEventListener('DOMContentLoaded', function() {
   q.onready('DOMContentLoaded');
-  q.defineProperty('load', {value: true});
+  q.defineProperty('loaded', {value: true});
 });
 document.addEventListener('load', function() {
   if(!q.loaded) {
     q.onready('load');
     q.onload();
-    q.defineProperty('load', {value: true});
+    q.defineProperty('loaded', {value: true});
   }
 })
