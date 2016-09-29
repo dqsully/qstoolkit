@@ -638,7 +638,7 @@ var q = (function() {
       console.log.apply(undefined, arguments);
       return arguments[1];
     },
-    ref: function(obj) {
+    ref: function() {
       return '<#Qref:' + (oref++) + '>';
     },
     limit: function(modifier, timeout, func) {
@@ -1153,7 +1153,6 @@ var qelement = (function() {
       return (test instanceof HTMLElement || test instanceof qelement || typeof(test) == qs.ts);
     }
   });
-  //TODO: add a function call limiter that can add values and run on different intervals (# or animationFrame)
   qelement.onextensions = {
     resize: function(me, ev) {
       var style = {
