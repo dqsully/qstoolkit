@@ -597,24 +597,21 @@ var qc = (function() {
       return tocache(selector, selector, extraTime, searchIn);
     if(selector instanceof HTMLElement)
       return tocache(newq(selector), selector, extraTime, searchIn);
-    // TODO: Finish qlist for this
-    // if(qlist.is(selector))
-    //   return tocache(new qlist(selector), selector, extraTime, searchIn);
+    if(qlist.is(selector))
+      return tocache(new qlist(selector), selector, extraTime, searchIn);
     if(typeof(selector) != qs.ts) throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
     if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fID))
       return tocache(newq(search.getElementById(selector.substr(1))), selector, extraTime, searchIn);
     // Querying
     var results = search.querySelectorAll(selector);
-    // TODO: Finish qlist for this
-    // if(options.forceList)
-    //   return new qlist(results);
+    if(options.forceList)
+      return new qlist(results);
     if(results.length == 0)
       return null;
     if(results.length == 1)
       return newq(results[0]);
-    // TODO: Finish qlist for this
-    // return new qlist(results);
+    return new qlist(results);
     return results;
   }
   qc.extend({
@@ -640,9 +637,8 @@ var q = (function() {
       return selector;
     if(selector instanceof HTMLElement)
       return newq(selector);
-    // TODO: Finish qlist for this
-    // if(qlist.is(selector))
-    //   return new qelist(selector);
+    if(qlist.is(selector))
+      return new qelist(selector);
     if(typeof(selector) != qs.ts)
       throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
@@ -650,15 +646,13 @@ var q = (function() {
       return newq(search.getElementById(selector.substr(1)));
     // Querying
     var results = search.querySelectorAll(selector);
-    // TODO: Finish qlist for this
-    // if(options.forceList)
-    //   return new qlist(results);
+    if(options.forceList)
+      return new qlist(results);
     if(results.length == 0)
       return null;
     if(results.length == 1)
       return newq(results[0]);
-    // TODO: Finish qlist for this
-    // return new qlist(results);
+    return new qlist(results);
     return results;
   }
 
@@ -1200,11 +1194,9 @@ var qelement = (function() {
   qelement.extend( {
     fromNodes: function(nodelist) {
       if(nodelist instanceof Node) return makeq(nodelist);
-      // TODO when qlist implemented
-      // if(nodelist instanceof qlist) return nodelist
+      if(nodelist instanceof qlist) return nodelist
       if(!(nodelist instanceof HTMLCollection || nodelist instanceof NodeList || nodelist instanceof Array)) throw new TypeError(qs.eList);
-      // TODO when qlist implemented
-      // return new qlist(nodelist);
+      return new qlist(nodelist);
       return null;
     },
     is: function(test) {
