@@ -1643,9 +1643,7 @@ var qelement = (function() {
       return this;
     },
     hasChildren: {get: function() {
-      if(this.em.children.length > 0)
-        return true;
-      return false;
+      return this.em.children.length > 0;
     }},
     focus: function() {
       this.em.focus();
