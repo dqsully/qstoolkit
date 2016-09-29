@@ -1320,7 +1320,7 @@ var qelement = (function() {
     },
     outerHtml: function(h) {
       if(!q.is(h)) return this.em.outerHTML;
-      this.em.outerHtml = h;
+      this.em.outerHTML = h;
       return this;
     },
     children: function(index) {
