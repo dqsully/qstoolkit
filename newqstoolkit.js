@@ -321,7 +321,7 @@ window.on = function(name, func, callNow) {
     return this.events[name];
   if(callNow)
     func();
-  this.events[name].push(func);
+  this.events[name].add(func);
   return this;
 }
 
@@ -558,7 +558,7 @@ var qevent = (function() {
 var qc = (function() {
   var cache = [];
 
-  function tocache(element, selector, extraTime, searchin) {
+  function tocache(element, selector, extraTime, searchIn) {
     searchIn = searchIn || document;
     cache.push({element: element, time: Date.now() + extraTime, selector: selector, searchIn: searchIn});
     if(cache.length >= qsettings.cacheLength) cache.shift();
@@ -583,26 +583,26 @@ var qc = (function() {
     - forceList : force output to array
       */
   function qc(selector, options) {
-    extraTime = options.extraTime || 0;
+    var extraTime = (options && options.extraTime) || 0;
     // searchIn validation and formatting
     var search = (options && options.searchIn && options.searchIn.em) || document;
     if(search && !qelement.is(search))
       throw new TypeError(qs.eNd);
     // Cache
     for(var i=0; i<cache.length; i++)
-      if(cache[i].selector == selector && (searchIn || document) == cache[i].searchIn)
+      if(cache[i].selector == selector && ((options && options.searchIn) || document) == cache[i].searchIn)
         return cache[i].element;
     // Validation and qelement creation
     if(selector instanceof qelement)
-      return tocache(selector, selector, extraTime, searchIn);
+      return tocache(selector, selector, extraTime, (options && options.searchIn) || null);
     if(selector instanceof HTMLElement)
-      return tocache(newq(selector), selector, extraTime, searchIn);
+      return tocache(newq(selector), selector, extraTime, (options && options.searchIn) || null);
     if(qlist.is(selector))
-      return tocache(new qlist(selector), selector, extraTime, searchIn);
+      return tocache(new qlist(selector), selector, extraTime, (options && options.searchIn) || null);
     if(typeof(selector) != qs.ts) throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
     if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fID))
-      return tocache(newq(search.getElementById(selector.substr(1))), selector, extraTime, searchIn);
+      return tocache(newq(search.getElementById(selector.substr(1))), selector, extraTime, (options && options.searchIn) || null);
     // Querying
     var results = search.querySelectorAll(selector);
     if(options.forceList)
@@ -612,7 +612,6 @@ var qc = (function() {
     if(results.length == 1)
       return newq(results[0]);
     return new qlist(results);
-    return results;
   }
   qc.extend({
     clearCache: function() {
@@ -625,6 +624,8 @@ var qc = (function() {
         cache = [];
     }
   });
+
+  return qc;
 })();
 var q = (function() {
   function q(selector, options) {
@@ -653,7 +654,6 @@ var q = (function() {
     if(results.length == 1)
       return newq(results[0]);
     return new qlist(results);
-    return results;
   }
 
   // Tool Definitions
@@ -1197,7 +1197,6 @@ var qelement = (function() {
       if(nodelist instanceof qlist) return nodelist
       if(!(nodelist instanceof HTMLCollection || nodelist instanceof NodeList || nodelist instanceof Array)) throw new TypeError(qs.eList);
       return new qlist(nodelist);
-      return null;
     },
     is: function(test) {
       return (test instanceof Node || test instanceof qelement);
@@ -1319,7 +1318,7 @@ var qelement = (function() {
         return this.em.events[name];
       if(callNow)
         func();
-      this.em.events[name].push(func);
+      this.em.events[name].add(func);
       return this;
     },
     // Destroy event
@@ -2060,7 +2059,9 @@ var qlist = (function() {
       return ret;
     }
   });
-});
+
+  return qlist;
+})();
 
 var qnet = (function() {
   function qnet(path, verb) {
