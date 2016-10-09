@@ -31,7 +31,7 @@ var qPromise = (function() {
     };
   } else a = setTimeout;
 
-  function qPromise(executor, multiple) {
+  function qPromise(executor, multiple, onevalue) {
     if(!q.is(this))
       return qPromise.applyNew(arguments); // Force new instance
     // Constructor
@@ -44,19 +44,20 @@ var qPromise = (function() {
         .p : previous
         .v : value
         */
-    var stack = {}, next = stack;
+    var stack = {}, next = stack, finalMsg;
     var empty = function(){}, o = 'o', j = 'j';
 
-    function createF(next, ofNext) {
+    function createF(next, ofNext, rewriteFinalMsg) {
       next = next.n;
       if(!next) return empty;
       return function(msg) {
+        if(rewriteFinalMsg && onevalue) finalMsg = msg;
         a(function() {
           if(!multiple && next.p.s != 0) return; // Allow only to be called once
           next.v = msg;
           try {
             next.p.s = (ofNext == j) + 1;
-            next[ofNext](next.d ? empty : createF(next, o), next.d ? empty : createF(next, j), msg);
+            next[ofNext](next.d ? finalMsg : createF(next, o), next.d ? empty : createF(next, j), msg);
             if(next.d) createF(next, o)(msg); // resolve
           } catch(e) {
             next.p.s = 2;
@@ -108,7 +109,7 @@ var qPromise = (function() {
     // Call it
     next.s = 0;
     (function(next) {a(function() {
-      executor(createF(next, o), createF(next, j));
+      executor(createF(next, o, true), createF(next, j, true));
     })})(next);
 
     NewPromise.__proto__ = this.__proto__; // Extend returned object to be this
