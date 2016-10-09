@@ -1,5 +1,5 @@
 /*
-  Q's JavaScript Toolkit v1.0.2b
+  Q's JavaScript Toolkit v1.0.3b
   A generic alternative to jQuery, allowing some amazing chaining.
   Instructions for compressing:
     Make sure all functions have aliases
@@ -629,7 +629,7 @@ var qc = (function() {
     if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fId))
       return tocache(newq(search.getElementById(selector.substr(1))), selector, extraTime, (options && options.searchIn) || null);
     // Querying
-    var results = search.querySelectorAll(selector);
+    var results = search['querySelector' + (options && options.first ? '' : 'All')](selector);
     if(options && options.forceList)
       return qelement.fromNodes(results, true);
     if(results.length == 0)
@@ -671,7 +671,7 @@ var q = (function() {
     if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fId))
       return newq(search.getElementById(selector.substr(1)));
     // Querying
-    var results = search.querySelectorAll(selector);
+    var results = search['querySelector' + (options && options.first ? '' : 'All')](selector);
     if(options && options.forceList)
       return qelement.fromNodes(results, true);
     if(results.length == 0)
