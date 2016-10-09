@@ -453,7 +453,7 @@ var qevent = (function() {
 
     options = options || {};
 
-    var handlers = [], names = [];
+    var handlers = {}, names = {}, nativeHandlers = {};
     var triggered = false;
     if('attachTo' in options)
       (options['attachTo'].em || options['attachTo']).addEventListener(options['name'], function() {
@@ -465,7 +465,7 @@ var qevent = (function() {
       handlers[ref] = handler;
       names[name] = ref;
       if('attachTo' in options)
-        (options.attachTo.em || options.attachTo).addEventListener(options.name, function(e) {
+        (options.attachTo.em || options.attachTo).addEventListener(options.name, nativeHandlers[ref] = function(e) {
           var ret = handler.call(undefined, e, options.attachTo);
           if(ret === false) e.preventDefault();
           return ret;
@@ -477,19 +477,28 @@ var qevent = (function() {
       var doResolve;
       if(func !== undefined) {
         if(typeof(func) == qs.tf) {
+          var resolveFunc;
+          function willResolve() {
+            return resolveFunc.apply(undefined, arguments);
+          }
+
           // Register handler
           if(options.once && triggered) {
             // Run current and all next handlers
             var toReturn = qPromise(function(resolve) {
-              toReturn.id = addHandler(resolve, func.name);
-            }, false)(func);
+              resolveFunc = resolve;
+            }, false, true)(func);
+
+            toReturn.id = addHandler(willResolve, func.name);
             return toReturn;
           }
 
           // Make chain
           var toReturn = qPromise(function(resolve) {
-            toReturn.id = addHandler(resolve, func.name);
-          }, !options.once)(func);
+            resolveFunc = resolve;
+          }, !options.once, true)(func);
+
+          toReturn.id = addHandler(willResolve, func.name);
           return toReturn;
         } else
           return event.t.apply(undefined, arguments); // Trigger
@@ -511,20 +520,29 @@ var qevent = (function() {
         });
       },
       add: function(func, callNow) {
+        var resolveFunc;
+        function willResolve() {
+          return resolveFunc.apply(undefined, arguments);
+        }
+
         if(typeof(func) != qs.tf) throw new TypeError(qs.eFunc);
         // Register handler
         if(options.once && triggered) {
           // Run current and all next handlers
           var toReturn = qPromise(function(resolve) {
-            toReturn.id = addHandler(resolve, func.name);
-          }, false)(func);
+            resolveFunc = resolve;
+          }, false, true)(func);
+
+          toReturn.id = addHandler(willResolve, func.name);
           return toReturn;
         }
 
         // Make chain
         var toReturn = qPromise(function(resolve) {
-          toReturn.id = addHandler(resolve, func.name);
-        }, !options.once)(func);
+          resolveFunc = resolve;
+        }, !options.once, true)(func);
+
+        toReturn.id = addHandler(willResolve, func.name);
         return toReturn;
       },
       remove: function(id) {
@@ -532,6 +550,8 @@ var qevent = (function() {
           throw new RangeError(qs.eORng);
         handlers[id] = undefined;
         names[names.keyOf(id)] = undefined;
+        if('attachTo' in options)
+          (options.attachTo.em || options.attachTo).removeEventListener(options.name, nativeHandlers[id]);
       },
       clear: function() {
         var keys = handlers.getKeys();
@@ -540,7 +560,10 @@ var qevent = (function() {
       },
       names: {get: function() {
         return names;
-      }}
+      }},
+      raw: {get: function() {
+        return {handlers: handlers, names: names, nativeHandlers: nativeHandlers};
+      }},
     });
 
     // Aliases
