@@ -27,7 +27,8 @@ var qPromise = (function() {
     mo.observe(el, {attributes: true});
     a = function(callback) {
       queue.push(callback);
-      if(queue.length == 1) el.setAttribute('x', 0);
+      if(queue.length == 1)
+        el.setAttribute('x', 0);
     };
   } else a = setTimeout;
 
@@ -95,7 +96,7 @@ var qPromise = (function() {
       next = next.n;
 
       // Define value getter (and clone)
-      var r = function() {return Function.prototype.apply(NewPromise, arguments);};
+      var r = function() {return Function.prototype.apply.call(NewPromise, undefined, arguments);};
       for(var key in NewPromise) if(NewPromise.hasOwnProperty(key)) r[key] = NewPromise[key];
       (function(n){Object.defineProperty(r, 'value', {get: function() {return n;}})})(next);
 
@@ -438,7 +439,7 @@ var qsettings = {
 var qevent = (function() {
   var curRef = 0;
   function makeRef() {
-    return '<#qstoolkit.event#>' + curRef + '</#qstoolkit.event#>';
+    return '<#qstoolkit.event#>' + curRef++ + '</#qstoolkit.event#>';
   }
 
   /*
@@ -625,7 +626,7 @@ var qc = (function() {
       return tocache(qlist.from(selector), selector, extraTime, (options && options.searchIn) || null);
     if(typeof(selector) != qs.ts) throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
-    if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fID))
+    if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fId))
       return tocache(newq(search.getElementById(selector.substr(1))), selector, extraTime, (options && options.searchIn) || null);
     // Querying
     var results = search.querySelectorAll(selector);
@@ -667,7 +668,7 @@ var q = (function() {
     if(typeof(selector) != qs.ts)
       throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
-    if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fID))
+    if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fId))
       return newq(search.getElementById(selector.substr(1)));
     // Querying
     var results = search.querySelectorAll(selector);
@@ -1213,7 +1214,7 @@ var qelement = (function() {
   }
   function css(a, y) {
     if(!q.is(a)) return '';
-    return (typeof(a) == qs.tn ? a.toVixed(3) + qsettings.defaultCSSUnits.length : a.trim());
+    return (typeof(a) == qs.tn ? a.toFixed(3) + qsettings.defaultCSSUnits.length : a.trim());
   }
   qelement.extend( {
     fromNodes: function(nodelist, forcelist) {
@@ -1609,7 +1610,7 @@ var qelement = (function() {
       return this.em.clientWidth;
     }},
     outerHeight: {get: function() {
-      var c = this.computedStyle, h = this.emoffsetHeight;
+      var c = this.computedStyle(), h = this.em.offsetHeight;
       // Add padding and border
       if(c['box-sizing'] == 'content-box') {
         h += parseFloat(c['padding-top']) + parseFloat(c['padding-bottom']) + parseFloat(c['border-top-width']) + parseFloat(c['border-bottom-width']);
@@ -1635,12 +1636,12 @@ var qelement = (function() {
       }
       if(!(1 in arguments)) return this.em.style[propname];
       // TODO: Create structure for every css property, to automate types
-      var str = css(arguments[i]);
-      for(var i=0; i<arguments.length; i++)
+      var str = css(arguments[1]);
+      for(var i=2; i<arguments.length; i++)
         str += ' ' + css(arguments[i]);
 
       // Use broswer-specific alias if property name is not valid
-      if(!(propname in qs.styles) && (propname in qs.styleAliases))
+      if(qs.styles && !(propname in qs.styles) && (propname in qs.styleAliases))
         this.em.style[qs.styleAliases[propname]] = str;
       else
         this.em.style[propname] = str;
@@ -2201,7 +2202,7 @@ q.onready(function() {
   for(var i=0; i<styles.length; i++) {
     qs.styles.push(styles[i]);
     if(styles[i][0] == '-')
-      qs.stylesAliases[styles[i].substr(styles[i].indexOf('-', 1) + 1)] = styles[i];
+      qs.styleAliases[styles[i].substr(styles[i].indexOf('-', 1) + 1)] = styles[i];
   }
 })(q.registerEventHandlers);
 
