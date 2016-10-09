@@ -622,20 +622,20 @@ var qc = (function() {
     if(selector instanceof HTMLElement)
       return tocache(newq(selector), selector, extraTime, (options && options.searchIn) || null);
     if(qlist.is(selector))
-      return tocache(new qlist(selector), selector, extraTime, (options && options.searchIn) || null);
+      return tocache(qlist.from(selector), selector, extraTime, (options && options.searchIn) || null);
     if(typeof(selector) != qs.ts) throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
     if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fID))
       return tocache(newq(search.getElementById(selector.substr(1))), selector, extraTime, (options && options.searchIn) || null);
     // Querying
     var results = search.querySelectorAll(selector);
-    if(options.forceList)
-      return new qlist(results);
+    if(options && options.forceList)
+      return qelement.fromNodes(results, true);
     if(results.length == 0)
       return null;
     if(results.length == 1)
       return newq(results[0]);
-    return new qlist(results);
+    return qelement.fromNodes(results);
   }
   qc.extend({
     clearCache: function() {
@@ -671,13 +671,13 @@ var q = (function() {
       return newq(search.getElementById(selector.substr(1)));
     // Querying
     var results = search.querySelectorAll(selector);
-    if(options.forceList)
-      return new qlist(results);
+    if(options && options.forceList)
+      return qelement.fromNodes(results, true);
     if(results.length == 0)
       return null;
     if(results.length == 1)
       return newq(results[0]);
-    return new qlist(results);
+    return qelement.fromNodes(results);
   }
 
   // Tool Definitions
@@ -1216,11 +1216,16 @@ var qelement = (function() {
     return (typeof(a) == qs.tn ? a.toVixed(3) + qsettings.defaultCSSUnits.length : a.trim());
   }
   qelement.extend( {
-    fromNodes: function(nodelist) {
-      if(nodelist instanceof Node) return makeq(nodelist);
-      if(nodelist instanceof qlist) return nodelist
+    fromNodes: function(nodelist, forcelist) {
+      if(!forcelist) {
+        if(nodelist instanceof Node) return makeq(nodelist);
+        if(nodelist instanceof qlist) return nodelist
+      }
       if(!(nodelist instanceof HTMLCollection || nodelist instanceof NodeList || nodelist instanceof Array)) throw new TypeError(qs.eList);
-      return new qlist(nodelist);
+      var out = [];
+      for(var i=0; i<nodelist.length; i++)
+        out.push(makeq(nodelist[i]));
+      return qlist.from(out, qelement);
     },
     is: function(test) {
       return (test instanceof Node || test instanceof qelement);
@@ -1806,8 +1811,10 @@ var qlist = (function() {
     var ar = [], proto;
     setfunc = function(newAr) {
       ar = newAr;
-      if(!q.is(reference))
+      if(!q.is(reference)) {
         reference = ar[0];
+        extendThis();
+      }
     }
 
     // Custom function/type
@@ -1816,10 +1823,12 @@ var qlist = (function() {
         return ar;
 
       if(!q.is(value))
-        return ar[i];
+        return ar[index];
 
-      if(!q.is(reference))
-        reference = ar[0];
+      if(!q.is(reference)) {
+        reference = ar[0] || value;
+        extendThis();
+      }
       ar[index] = value;
       return ret;
     }
@@ -1836,7 +1845,18 @@ var qlist = (function() {
         for(var i=0; i<len; i++)
           out = func(ar[i], out, ret, i);
         return out;
-      }
+      },
+      foreach: function(func) {
+        for(var i=0; i<ar.length; i++)
+          func(ar[i], this, i);
+        return this;
+      },
+      raw: {get:function() {
+        return ar;
+      }},
+      reference: {get:function() {
+        return reference;
+      }}
     });
 
     // Built-in array methods with polyfills whenever necessary
@@ -2015,49 +2035,76 @@ var qlist = (function() {
     });
 
     // Extend all reference functions/properties to ret
-    var names = (proto = reference.prototype || reference).getOwnPropertyNames();
-    for(var i=0; i<names.length; i++) (function(m) {
-      if(!proto.hasGetOrSet(m) && typeof(proto[m]) == qs.tf) {
-        ret[m] = function() {
-          var out, tmp, type = 'this', i=0; len = ar.length;
+    var extendThis;
+    (extendThis = function() {
+      if(!reference) return;
+      var names = (proto = reference.prototype || reference.__proto__).getOwnPropertyNames();
+      for(var i=0; i<names.length; i++) (function(m) {
+        if(!proto.hasGetOrSet(m) && typeof(proto[m]) == qs.tf) {
+          ret[m] = function() {
+            var out, tmp, type = 'this', i=0, len = ar.length;
 
-          // Check if 'this' needs to be returned
-          if(i in ar) {
-            // tmp = proto[m].apply(ar[i], arguments);
-            tmp = ar[i][m].apply(undefined, arguments); // Preferred as it allows for closures
-            if(tmp !== ar[i]) {
-              type = typeof(tmp);
-              out = type == qs.tn ? tmp : [tmp];
-            }
-          } else return null;
+            // Check if 'this' needs to be returned
+            if(i in ar) {
+              // tmp = proto[m].apply(ar[i], arguments);
+              tmp = ar[i][m].apply(ar[i], arguments); // Preferred as it allows for closures
+              if(tmp !== ar[i]) {
+                type = typeof(tmp);
+                out = type == qs.tn ? tmp : [tmp];
+              }
+            } else return null;
 
-          // Run on the rest of the contained elements
-          for(i=1; i<len; i++) {
-            // tmp = proto[m].apply(ar[i], arguments);
-            tmp = ar[i][m].apply(undefined, arguments); // Preferred as it allows for closures
-            if(type != 'this')
+            // Run on the rest of the contained elements
+            for(i=1; i<len; i++) {
+              // tmp = proto[m].apply(ar[i], arguments);
+              tmp = ar[i][m].apply(ar[i], arguments); // Preferred as it allows for closures
+              if(type != 'this')
               out.push(tmp);
-          }
-          if(type == 'this')
+            }
+            if(type == 'this')
             return ret;
-          return qlist.from(out, reference);
+            return qlist.from(out);
+          }
+        } else if(proto.hasGetOrSet(m)) {
+          ret.defineProperty(m, {get: function() {
+            var out, type, tmp, i=0, len = ar.length;
+
+            if(i in ar) {
+              type = typeof(ar[i][m]);
+              out = [ar[i][m]];
+            } else return null;
+
+            for(i=1; i<len; i++)
+            out.push(ar[i][m]);
+
+            return qlist.from(out);
+          }});
         }
-      } else if(proto.hasGetOrSet(m)) {
-        ret.defineProperty(m, {get: function() {
-          var out, type, tmp, i=0, len = ar.length;
+      })(names[i]);
 
-          if(i in ar) {
-            type = typeof(ar[i][m]);
-            out = [this[i][m]];
-          } else return null;
-
-          for(i=1; i<len; i++)
-            out.push(this[i][m]);
-
-          return qlist.from(out, reference);
-        }});
+      if(typeof(reference) == 'number' || reference == Number) {
+        ret.extend({
+          sum: function() {
+            var out = 0;
+            for(var i=0; i<ar.length; i++)
+              out += ar[i];
+            return out;
+          },
+          avg: function() {
+            var out = 0;
+            for(var i=0; i<ar.length; i++)
+              out += ar[i];
+            return out / ar.length;
+          },
+          prod: function() {
+            var out = 1;
+            for(var i=0; i<ar.length; i++)
+              out *= ar[i];
+            return out;
+          }
+        })
       }
-    })(names[i]);
+    })()
 
     // Make sure returned object extends this
     ret.__proto__ = this.__proto__;
@@ -2070,7 +2117,7 @@ var qlist = (function() {
       return false;
     },
     from: function(arrayLike, reference) {
-      var ret = qlist(reference);
+      var ret = qlist(reference || arrayLike[0]);
       setfunc(Array.from(arrayLike));
       return ret;
     },
