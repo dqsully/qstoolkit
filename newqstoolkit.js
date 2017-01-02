@@ -590,6 +590,46 @@ var qevent = (function() {
   return qevent
 })();
 
+var qevents = (function() {
+  function qevents() {
+    this.list = {};
+  }
+
+  qevents.prototype.extend({
+    on: function(name, func, callNow) {
+      var out = [];
+      if(!q.is(name))
+        throw new RangeError(qs.eNEA);
+      if(typeof(name) == qs.to) {
+        for(var i=0; i<name.length; i++)
+          out.push(this.on(name[i], func, callNow));
+        if(!q.is(func))
+          return out;
+        return this;
+      }
+      if(!(name in this.list)) {
+        this.list[name] = new qevent();
+      }
+      if(!q.is(func))
+        return this.list[name];
+      if(callNow)
+        func();
+      this.list[name].add(func);
+      return this;
+    },
+    addEvent: function(name, options) {
+      if(typeof(name) == qs.to) {
+        var keys = name.getKeys();
+        for(var i=0; i<keys.length; i++)
+          this.addEvent(keys[i], name[keys[i]]);
+      } else
+        this.list[name] = new qevent(options);
+    }
+  })
+
+  return qevents;
+})();
+
 var qc = (function() {
   var cache = [];
 
