@@ -239,7 +239,7 @@ Object.prototype.path = function() {
 Object.prototype.extend = function(toAppend) {
   if(typeof(toAppend) != qs.to)
     throw new TypeError('Not a valid Object');
-  var keys = toAppend.getKeys(), akey, cur;
+  var keys = Object.keys(toAppend), akey, cur;
   for(var i=0; i<keys.length; i++) {
     if(typeof(cur = toAppend[keys[i]]) == qs.to) {
       akey = cur.getKeys();
@@ -847,7 +847,7 @@ var q = (function() {
         s[name] = false;
         q.record('q', s);
       }
-      var i=0; len = animations.length - 1, exit = false, t;
+      var i=0, len = animations.length - 1, exit = false, t;
       var run = function() {
         var em, styles, tmp, plen;
         for(var p=0; p<animations[i].properties.length; p++) {
@@ -1913,6 +1913,9 @@ var qlist = (function() {
         for(var i=0; i<ar.length; i++)
           func(ar[i], this, i);
         return this;
+      },
+      getKeys: function() {
+        return ar.getKeys();
       },
       raw: {get:function() {
         return ar;
