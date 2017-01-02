@@ -2197,61 +2197,91 @@ var qlist = (function() {
 
 var qnet = (function() {
   function qnet(path, verb) {
-    this.con = new XMLHttpRequest;
-    this.open = false;
+    // Initialization
+    this.onload = new qevent();
+    this.onstatechange = new qevent();
+    this.con = new XMLHttpRequest();
+    this.defineProperty('isOpen', {value: false, configurable: true});
+    this.defineProperty('isActive', {value: false, configurable: true});
     this.data = this.path = this.verb = null;
-    if(q.is(path)) {
-      this.path = path || this.path;
-      this.verb = ver || this.verb;
-      this.con.open(this.verb || 'GET', this.path);
-      this.open = true;
+
+    if(path) {
+      this.open(path, verb || 'GET');
+      this.defineProperty('isOpen', {value: false, configurable: true});
     }
   }
+
   qnet.prototype.extend({
-    onload: new qevent(),
-    onstatechange: new qevent(),
     send: function(data, path, verb) {
       var con = this.con, t = this;
-      if(!this.open) {
-        if(!(path || this.path))
-          throw new ReferenceError('path is not set');
-        this.path = path || this.path;
+
+      // Make sure to open new connection
+      if(path || verb || (this.path && !this.isOpen)) {
         this.verb = verb || this.verb;
-        con.open(this.ver || 'Get', this.path);
-      }
-      con.addEventListener('readystatechange', function() {
+        this.path = path || this.path;
+
+        if(this.path)
+          this.open(this.path, this.verb || 'GET');
+      } else if(!this.path && !this.isOpen)
+        throw new ReferenceError('path is not set');
+
+      this.defineProperty('isActive', {value: true, configurable: true});
+
+      var listener = function() {
         t.data = con.response;
         t.onstatechange.t(con.response);
-        if(con.readyState == 4) t.onload.t(con.response);
-      });
+        if(con.readyState == 4) {
+          t.onload.t(con.response);
+          con.removeEventListener('readystatechange', listener);
+          t.defineProperty('isOpen', {value: false, configurable: true});
+          t.defineProperty('isActive', {value: false, configurable: true});
+        }
+      }
+      con.addEventListener('readystatechange', listener);
+
       con.send(data);
+
       return this;
     },
     open: function(path, verb) {
-      if(!this.open) {
-        this.con.open(verb || 'GET', path);
-        this.open = true;
-      }
+      this.verb = verb || this.verb;
+      this.path = path || this.path;
+
+      if(!this.path)
+        throw new ReferenceError('path is not set');
+
+      this.con.open(this.verb || 'GET', this.path);
+      this.defineProperty('isOpen', {value: true, configurable: true});
+
       return this;
-    }
+    },
+    header: function(key, value) {
+      if(!q.is(value))
+        return this.con.getResponseHeader(value);
+      if(!q.is(key))
+        return null;
+      return this.con.setRequestHeader(key, value);
+    },
   });
+
   qnet.extend({
     getJson: function(url) {
       return qPromise(function(resolve, reject) {
-        var client = new XMLHttpRequest;
-        client.open('GET', url);
-        client.onreadystatechange = function() {
-          if(client.readyState == 4)
-            if(client.status == 200)
-              resolve(this.response);
-            else reject(this);
-        }
-        client.responseType = 'json';
-        client.setReqjestHeader('Accept', 'application/json');
+        var client = new qnet(url);
+
+        client.onload(function() {
+          if(client.status == 200)
+            resolve(this.response);
+          else
+            reject(this);
+        });
+        client.con.responseType = 'json';
+        client.header('Accept', 'application/json');
         client.send();
-      });
+      })
     }
-  });
+  })
+
   return qnet;
 })();
 
