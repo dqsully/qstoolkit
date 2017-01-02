@@ -229,7 +229,7 @@ Object.prototype.path = function() {
       }
     }
     // Go back a layer in the tree, reached the end
-    if(rm) {
+    if(rm || keys.length == 0) {
       if(stack.length == 0)
         return out;
       prev = stack.pop();
