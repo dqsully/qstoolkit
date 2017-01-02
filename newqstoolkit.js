@@ -11,6 +11,11 @@
 */
 
 'use strict';
+if(!window) {
+  var window = global;
+  Object.defineProperty(global, 'isBrowser', {value: false});
+} else
+  Object.defineProperty(window, 'isBrowser', {value: true});
 
 // Promise polyfil
 // Better Promises
@@ -298,13 +303,15 @@ Object.prototype.foreach = function(func) {
   return this;
 }
 // Key polyfil
-KeyboardEvent.prototype.getKey = function(force) {
-  if(!force && 'key' in this)
-    return this.key;
-  var key = qs.keys[this.which || this.keyCode];
-  if(typeof(key) == qs.to)
-    key = key[+this.shiftKey];
-  return key;
+if(isBrowser) {
+  KeyboardEvent.prototype.getKey = function(force) {
+    if(!force && 'key' in this)
+      return this.key;
+    var key = qs.keys[this.which || this.keyCode];
+    if(typeof(key) == qs.to)
+      key = key[+this.shiftKey];
+    return key;
+  }
 }
 Number.prototype.bound = function(lower, higher) {
   if(lower > higher)
@@ -1206,603 +1213,612 @@ function makeq(element) {
   if(element instanceof qelement) return element;
   return newq(element);
 }
-var qelement = (function() {
-  function qelement(element) {
-    if(typeof(element) == qs.ts) this.em = document.createElement(element);
-    else if(element instanceof Node) this.em = element;
-    else if(element instanceof qelement) return element;
-    else throw new TypeError(qs.eNdOrTag);
-    if(typeof(this.em.events) != qs.to) this.em.events = {};
-    if(typeof(this.em.devents) != qs.to) this.em.devents = {};
-  }
-  function css(a, y) {
-    if(!q.is(a)) return '';
-    return (typeof(a) == qs.tn ? a.toFixed(3) + qsettings.defaultCSSUnits.length : a.trim());
-  }
-  qelement.extend( {
-    fromNodes: function(nodelist, forcelist) {
-      if(!forcelist) {
-        if(nodelist instanceof Node) return makeq(nodelist);
-        if(nodelist instanceof qlist) return nodelist
-      }
-      if(!(nodelist instanceof HTMLCollection || nodelist instanceof NodeList || nodelist instanceof Array)) throw new TypeError(qs.eList);
-      var out = [];
-      for(var i=0; i<nodelist.length; i++)
-        out.push(makeq(nodelist[i]));
-      return qlist.from(out, qelement);
-    },
-    is: function(test) {
-      return (test instanceof Node || test instanceof qelement);
-    },
-    isem: function(test) {
-      return (test instanceof HTMLElement || test instanceof qelement);
-    },
-    isstr: function(test) {
-      return (test instanceof Node || test instanceof qelement || typeof(test) == qs.ts);
-    },
-    isemstr: function(test) {
-      return (test instanceof HTMLElement | test instanceof qelement || typeof(test) == qs.ts);
+if(isBrowser) {
+  var qelement = (function() {
+    function qelement(element) {
+      if(typeof(element) == qs.ts) this.em = document.createElement(element);
+      else if(element instanceof Node) this.em = element;
+      else if(element instanceof qelement) return element;
+      else throw new TypeError(qs.eNdOrTag);
+      if(typeof(this.em.events) != qs.to) this.em.events = {};
+      if(typeof(this.em.devents) != qs.to) this.em.devents = {};
     }
-  })
-  qelement.onextensions = {
-    resize: function(me, ev) {
-      var style = {
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 'calc(100% + 1px)',
-        height: 'calc(100% + 1px)',
-        overflow: 'hidden',
-        'z-index': '-1',
-        visibility: 'hidden'
-      }, styleChild = {
-        position: 'absolute',
-        left: '0',
-        top: '0',
-        transition: '0s'
-      }, sensor, expand, expandChild, shrink, reset, pw, ph, called = false, shouldCall = true, first = 2;
-      me.extendEm('resizeSensor',
-        sensor = me.a('div')
-          .classes('resize-sensor')
-          .style(style)
-          .a(expand = newq('div')
-            .classes('resize-sensor-expand')
-            .style(style)
-            .a(expandChild = newq('div')
-              .style(styleChild)
-              .style({
-                width: 100000,
-                height: 100000
-              })
-            )
-          ).a(shrink = newq('div')
-            .classes('resize-sensor-shrink')
-            .style(style)
-            .a(newq('div')
-              .style(styleChild)
-              .style({
-                width: '200%',
-                height: '200%',
-              })
-            )
-          )
-      );
-
-      if(me.computedStyle('position') == 'static')
-        me.style('position', 'relative');
-      shrink.scroll(100000, 1000000);
-      expand.scroll(100000, 1000000);
-
-      function onScroll(e) {
-        if(first) {
-          first--;
-          return;
-        }
-        if(!shouldCall) {
-          shouldCall = true;
-          return;
-        }
-        if((me.width != pw || me.height != ph) && !called) {
-          window.requestAnimationFrame(function() {
-            ev.t({
-              width: pw = me.width,
-              height: ph = me.height
-            });
-            called = false;
-          })
-          switch(e.target.className) {
-            case 'resize-sensor-expand':
-              shrink.scroll(100000, 100000);
-            break;
-            case 'resize-sensor-shrink':
-              expand.scroll(100000, 100000);
-            break;
-          }
-          called = true;
-          shouldCall = false;
-        }
-      }
-      expand.on('scroll', onScroll);
-      shrink.on('scroll', onScroll);
-      return function destroy() {
-        sensor.detach();
-      }
+    function css(a, y) {
+      if(!q.is(a)) return '';
+      return (typeof(a) == qs.tn ? a.toFixed(3) + qsettings.defaultCSSUnits.length : a.trim());
     }
-  };
-  qelement.prototype.extend({
-    on: function(name, func, callNow) {
-      var out = [];
-      if(!q.is(name))
-        throw new RangeError(qs.eNEA);
-      if(typeof(name) == qs.to) {
-        for(var i=0; i<name.length; i++)
-          out.push(this.on(name[i], func, callNow));
-        if(!q.is(func))
-          return out;
-        return this;
-      }
-      var isAnExtension = name in qelement.onextensions;
-      if(!(name in this.em.events)) {
-        this.em.events[name] = new qevent(isAnExtension ? {} : {'attachTo': this, 'name': name});
-        if(isAnExtension)
-          this.em.devents[name] = qelement.onextensions[name](this, this.em.events[name]);
-      }
-      if(!q.is(func))
-        return this.em.events[name];
-      if(callNow)
-        func();
-      this.em.events[name].add(func);
-      return this;
-    },
-    // Destroy event
-    non: function(name) {
-      if(name in this.em.events) {
-        if(name in this.em.devents[name]) this.em.devents[name]();
-        this.em.events[name].clear();
-        this.em.events[name] = null;
-      }
-      return this;
-    },
-    id: function(newid) {
-      if(!q.is(newid)) return this.em.id;
-      this.em.id = newid;
-      return this;
-    },
-    class: function(add, rem) {
-      if(add != null) {
-        if(add instanceof Array) {
-          for(var i=0; i<add.length; i++)
-            this.em.classList.add(add[i]);
-        } else
-          this.em.classList.add(add);
-      }
-      if(rem != null) {
-        if(typeof(rem) == qs.to) {
-          for(var i=0; i<rem.length; i++)
-            this.em.classList.remove(rem[i]);
+    qelement.extend( {
+      fromNodes: function(nodelist, forcelist) {
+        if(!forcelist) {
+          if(nodelist instanceof Node) return makeq(nodelist);
+          if(nodelist instanceof qlist) return nodelist
+        }
+        if(nodelist instanceof qlist) {
+          var out = [];
+          for(var i=0; i<nodelist.length; i++)
+            out.push(makeq(nodelist(i)));
+          return qlist.from(out, qelement);
         } else {
-            this.em.classList.remove(rem);
+          if(!(nodelist instanceof HTMLCollection || nodelist instanceof NodeList || nodelist instanceof Array)) throw new TypeError(qs.eList);
+          var out = [];
+          for(var i=0; i<nodelist.length; i++)
+            out.push(makeq(nodelist[i]));
+          return qlist.from(out, qelement);
         }
+      },
+      is: function(test) {
+        return (test instanceof Node || test instanceof qelement);
+      },
+      isem: function(test) {
+        return (test instanceof HTMLElement || test instanceof qelement);
+      },
+      isstr: function(test) {
+        return (test instanceof Node || test instanceof qelement || typeof(test) == qs.ts);
+      },
+      isemstr: function(test) {
+        return (test instanceof HTMLElement | test instanceof qelement || typeof(test) == qs.ts);
       }
+    })
+    qelement.onextensions = {
+      resize: function(me, ev) {
+        var style = {
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 'calc(100% + 1px)',
+          height: 'calc(100% + 1px)',
+          overflow: 'hidden',
+          'z-index': '-1',
+          visibility: 'hidden'
+        }, styleChild = {
+          position: 'absolute',
+          left: '0',
+          top: '0',
+          transition: '0s'
+        }, sensor, expand, expandChild, shrink, reset, pw, ph, called = false, shouldCall = true, first = 2;
+        me.extendEm('resizeSensor',
+        sensor = me.a('div')
+        .classes('resize-sensor')
+        .style(style)
+        .a(expand = newq('div')
+        .classes('resize-sensor-expand')
+        .style(style)
+        .a(expandChild = newq('div')
+        .style(styleChild)
+        .style({
+          width: 100000,
+          height: 100000
+        })
+      )
+    ).a(shrink = newq('div')
+    .classes('resize-sensor-shrink')
+    .style(style)
+    .a(newq('div')
+    .style(styleChild)
+    .style({
+      width: '200%',
+      height: '200%',
+    })
+  )
+)
+);
+
+if(me.computedStyle('position') == 'static')
+me.style('position', 'relative');
+shrink.scroll(100000, 1000000);
+expand.scroll(100000, 1000000);
+
+function onScroll(e) {
+  if(first) {
+    first--;
+    return;
+  }
+  if(!shouldCall) {
+    shouldCall = true;
+    return;
+  }
+  if((me.width != pw || me.height != ph) && !called) {
+    window.requestAnimationFrame(function() {
+      ev.t({
+        width: pw = me.width,
+        height: ph = me.height
+      });
+      called = false;
+    })
+    switch(e.target.className) {
+      case 'resize-sensor-expand':
+      shrink.scroll(100000, 100000);
+      break;
+      case 'resize-sensor-shrink':
+      expand.scroll(100000, 100000);
+      break;
+    }
+    called = true;
+    shouldCall = false;
+  }
+}
+expand.on('scroll', onScroll);
+shrink.on('scroll', onScroll);
+return function destroy() {
+  sensor.detach();
+}
+}
+};
+qelement.prototype.extend({
+  on: function(name, func, callNow) {
+    var out = [];
+    if(!q.is(name))
+    throw new RangeError(qs.eNEA);
+    if(typeof(name) == qs.to) {
+      for(var i=0; i<name.length; i++)
+      out.push(this.on(name[i], func, callNow));
+      if(!q.is(func))
+      return out;
       return this;
-    },
-    classes: function() {
-      if(!(0 in arguments)) return this.em.classList;
-      var n = '';
-      for(var i=0; i<arguments.length; i++)
-        n += (n.length == 0 ? '' : ' ') + arguments[i];
-      this.em.className = n;
-      return this;
-    },
-    hasClass: function(seachFor) {
-      return this.em.classList.contains(seachFor);
-    },
-    addClass: function() {
-      for(var i=0; i<arguments.length; i++)
-        this.em.classList.add(arguments[i]);
-      return this;
-    },
-    remClass: function() {
-      for(var i=0; i<arguments.length; i++)
-        this.em.classList.remove(arguments[i]);
-        return this;
-    },
-    togClass: function(c) {
-      return this.em.classList.toggle(c);
-    },
-    text: function(t) {
-      if(!q.is(t))
-        return (this.em instanceof HTMLInputElement || this.em instanceof HTMLSelectElement) ? this.em.value : this.em.textContent;
-      if(this.em instanceof HTMLInputElement || this.em instanceof HTMLSelectElement)
-        this.em.value = t;
-      else
-        this.em.textContent = t;
-      return this;
-    },
-    title: function(t) {
-      if(!q.is(t))
-        return this.em.title;
-      this.em.title = t;
-      return this;
-    },
-    html: function(h) {
-      if(!q.is(h))
-        return this.em.innerHTML;
-      this.em.innerHTML = h;
-      return this;
-    },
-    appendHtml: function(h) {
-      thislem.innerHTML += h;
-      return this;
-    },
-    outerHtml: function(h) {
-      if(!q.is(h))
-        return this.em.outerHTML;
-      this.em.outerHTML = h;
-      return this;
-    },
-    children: function(index) {
-      if(!q.is(index)) return qelement.fromNodes(this.em.children);
-      if(typeof(index) == qs.tn) {
-        if(index >= 0 && index in this.em.children)
-          return newq(this.em.children[index]);
-        else if((this.childCount + index) in this.em.children)
-          return newq(this.em.children[this.childCount + index]);
-        return null;
+    }
+    var isAnExtension = name in qelement.onextensions;
+    if(!(name in this.em.events)) {
+      this.em.events[name] = new qevent(isAnExtension ? {} : {'attachTo': this, 'name': name});
+      if(isAnExtension)
+      this.em.devents[name] = qelement.onextensions[name](this, this.em.events[name]);
+    }
+    if(!q.is(func))
+    return this.em.events[name];
+    if(callNow)
+    func();
+    this.em.events[name].add(func);
+    return this;
+  },
+  // Destroy event
+  non: function(name) {
+    if(name in this.em.events) {
+      if(name in this.em.devents[name]) this.em.devents[name]();
+      this.em.events[name].clear();
+      this.em.events[name] = null;
+    }
+    return this;
+  },
+  id: function(newid) {
+    if(!q.is(newid)) return this.em.id;
+    this.em.id = newid;
+    return this;
+  },
+  class: function(add, rem) {
+    if(add != null) {
+      if(add instanceof Array) {
+        for(var i=0; i<add.length; i++)
+        this.em.classList.add(add[i]);
+      } else
+      this.em.classList.add(add);
+    }
+    if(rem != null) {
+      if(typeof(rem) == qs.to) {
+        for(var i=0; i<rem.length; i++)
+        this.em.classList.remove(rem[i]);
+      } else {
+        this.em.classList.remove(rem);
       }
-      if(typeof(index) == qs.ts) return q(index, {searchIn: this, forceList: true});
-      if(index instanceof Array) {
-        var out = [];
-        for(var i=0; i<index.length; i++)
-          out.push(this.children(index[i]));
-        return out;
-      }
+    }
+    return this;
+  },
+  classes: function() {
+    if(!(0 in arguments)) return this.em.classList;
+    var n = '';
+    for(var i=0; i<arguments.length; i++)
+    n += (n.length == 0 ? '' : ' ') + arguments[i];
+    this.em.className = n;
+    return this;
+  },
+  hasClass: function(seachFor) {
+    return this.em.classList.contains(seachFor);
+  },
+  addClass: function() {
+    for(var i=0; i<arguments.length; i++)
+    this.em.classList.add(arguments[i]);
+    return this;
+  },
+  remClass: function() {
+    for(var i=0; i<arguments.length; i++)
+    this.em.classList.remove(arguments[i]);
+    return this;
+  },
+  togClass: function(c) {
+    return this.em.classList.toggle(c);
+  },
+  text: function(t) {
+    if(!q.is(t))
+    return (this.em instanceof HTMLInputElement || this.em instanceof HTMLSelectElement) ? this.em.value : this.em.textContent;
+    if(this.em instanceof HTMLInputElement || this.em instanceof HTMLSelectElement)
+    this.em.value = t;
+    else
+    this.em.textContent = t;
+    return this;
+  },
+  title: function(t) {
+    if(!q.is(t))
+    return this.em.title;
+    this.em.title = t;
+    return this;
+  },
+  html: function(h) {
+    if(!q.is(h))
+    return this.em.innerHTML;
+    this.em.innerHTML = h;
+    return this;
+  },
+  appendHtml: function(h) {
+    thislem.innerHTML += h;
+    return this;
+  },
+  outerHtml: function(h) {
+    if(!q.is(h))
+    return this.em.outerHTML;
+    this.em.outerHTML = h;
+    return this;
+  },
+  children: function(index) {
+    if(!q.is(index)) return qelement.fromNodes(this.em.children);
+    if(typeof(index) == qs.tn) {
+      if(index >= 0 && index in this.em.children)
+      return newq(this.em.children[index]);
+      else if((this.childCount + index) in this.em.children)
+      return newq(this.em.children[this.childCount + index]);
       return null;
-    },
-    childCount: {get: function() {
-      return this.em.children.length;
-    }},
-    index: {get: function() {
-      var t = this.em, i = 0;
-      while((t = t.previousElementSibling) != null)
-        i++;
-      return i;
-    }},
-    nodeIndex: {get: function() {
-      var t = this.em; i = 0;
-      while((t = t.prevousSibling) == null)
-        i++;
-      return i;
-    }},
-    append: function(child) {
-      var s;
-      if(!qelement.isstr(child))
-        throw new TypeError(qs.eNd);
-      this.em.appendChild((s = makeq(child)).em);
-      return typeof(child) == qs.ts ? s : this;
-    },
-    insertAt: function(child, index) {
-      var s;
-      this.em.insertBefore((s = makeq(child)).em, this.em.children[index]);
-      return typeof(child) == qs.ts ? s : this;
-    },
-    insertBefore: function(child, before) {
-      var s;
-      if(!(qelement.isstr(child) || qelement.is(before)))
-        throw new TypeError(qs.eNd);
-      this.em.insertBefore((s = makeq(child)).em);
-      return typeof(child) == qs.ts ? s : this;
-    },
-    detach: function() {
-      this.em.parentNode.removeChild(this.em);
+    }
+    if(typeof(index) == qs.ts) return q(index, {searchIn: this, forceList: true});
+    if(index instanceof Array) {
+      var out = [];
+      for(var i=0; i<index.length; i++)
+      out.push(this.children(index[i]));
+      return out;
+    }
+    return null;
+  },
+  childCount: {get: function() {
+    return this.em.children.length;
+  }},
+  index: {get: function() {
+    var t = this.em, i = 0;
+    while((t = t.previousElementSibling) != null)
+    i++;
+    return i;
+  }},
+  nodeIndex: {get: function() {
+    var t = this.em; i = 0;
+    while((t = t.prevousSibling) == null)
+    i++;
+    return i;
+  }},
+  append: function(child) {
+    var s;
+    if(!qelement.isstr(child))
+    throw new TypeError(qs.eNd);
+    this.em.appendChild((s = makeq(child)).em);
+    return typeof(child) == qs.ts ? s : this;
+  },
+  insertAt: function(child, index) {
+    var s;
+    this.em.insertBefore((s = makeq(child)).em, this.em.children[index]);
+    return typeof(child) == qs.ts ? s : this;
+  },
+  insertBefore: function(child, before) {
+    var s;
+    if(!(qelement.isstr(child) || qelement.is(before)))
+    throw new TypeError(qs.eNd);
+    this.em.insertBefore((s = makeq(child)).em);
+    return typeof(child) == qs.ts ? s : this;
+  },
+  detach: function() {
+    this.em.parentNode.removeChild(this.em);
+    return this;
+  },
+  appendTo: function(parent) {
+    var s;
+    if(!qelement.isstr(parent))
+    throw new TypeError(qs.eNd);
+    (s = makeq(parent)).em.appendChild(this.em);
+    return typeof(parent) == qs.ts ? s : this;
+  },
+  insertInto: function(parent ,index) {
+    var s;
+    if(!qelement.isstr(parent))
+    throw new TypeError(qs.eNd);
+    (s = makeq(parent)).insertAt(this, index);
+    return typeof(parent) == qs.ts ? s : this;
+  },
+  insertBeforeIn: function(parent, before) {
+    if(!(qelement.is(parent) || qelement.is(before)))
+    throw new TypeError(qs.eNd);
+    (parent.em || parent).insertBefore(this, before.em || beofre);
+    return this;
+  },
+  insertBeforeThis: function(element) {
+    var s;
+    if(!(qelement.isstr(element)))
+    throw new TypeError(qs.eNd);
+    this.em.parentNode.insertBefore((s = makeq(element)).em, this.em);
+    return typeof(element) == qs.ts ? s : this;
+  },
+  insertAfterThis: function(element) {
+    var s;
+    if(!(qelement.isstr(element)))
+    throw new TypeError(qs.eNd);
+    this.em.parentNode.insertBefore((s = makeq(element)).em, this.em.parentNode.children[this.nodeIndex + 1]);
+    return typeof(element) == qs.ts ? s : this;
+  },
+  previousSibling: {get: function() {
+    return newq(this.em.previousElementSibling);
+  }},
+  nextSibling: {get: function() {
+    return newq(this.em.nextElementSibling);
+  }},
+  remove: function(child) {
+    if(qelement.is(child)) {
+      this.em.removeChild(child.em || child);
       return this;
-    },
-    appendTo: function(parent) {
-      var s;
-      if(!qelement.isstr(parent))
-        throw new TypeError(qs.eNd);
-      (s = makeq(parent)).em.appendChild(this.em);
-      return typeof(parent) == qs.ts ? s : this;
-    },
-    insertInto: function(parent ,index) {
-      var s;
-      if(!qelement.isstr(parent))
-        throw new TypeError(qs.eNd);
-      (s = makeq(parent)).insertAt(this, index);
-      return typeof(parent) == qs.ts ? s : this;
-    },
-    insertBeforeIn: function(parent, before) {
-      if(!(qelement.is(parent) || qelement.is(before)))
-        throw new TypeError(qs.eNd);
-      (parent.em || parent).insertBefore(this, before.em || beofre);
-      return this;
-    },
-    insertBeforeThis: function(element) {
-      var s;
-      if(!(qelement.isstr(element)))
-        throw new TypeError(qs.eNd);
-      this.em.parentNode.insertBefore((s = makeq(element)).em, this.em);
-      return typeof(element) == qs.ts ? s : this;
-    },
-    insertAfterThis: function(element) {
-      var s;
-      if(!(qelement.isstr(element)))
-        throw new TypeError(qs.eNd);
-      this.em.parentNode.insertBefore((s = makeq(element)).em, this.em.parentNode.children[this.nodeIndex + 1]);
-      return typeof(element) == qs.ts ? s : this;
-    },
-    previousSibling: {get: function() {
-      return newq(this.em.previousElementSibling);
-    }},
-    nextSibling: {get: function() {
-      return newq(this.em.nextElementSibling);
-    }},
-    remove: function(child) {
-      if(qelement.is(child)) {
-        this.em.removeChild(child.em || child);
-        return this;
-      }
-      if(child instanceof Array) {
-        for(var i=0; i<child.length; i++) {
-          if(!qelement.is(child[i]))
-            throw new TypeError(qs.eNdOrList);
-          this.em.removeChild(child[i].em || child[i]);
-        }
-        return this;
-      }
-      if(typeof(child) == qs.tn) {
-        this.em.removeChild(this.em.children[child]);
-        return this;
-      }
-      throw new TypeError(qs.eNdOrList);
-    },
-    hasSelection: {get: function() {
-      if(!(this.em instanceof HTMLInputElement))
-        throw new TypeError(qs.eIn);
-      if(this.em.selectionStart == this.em.selectionEnd)
-        return false;
-      return true;
-    }},
-    cursor: function(index) {
-      if(!(this.em instanceof HTMLInputElement))
-        throw new TypeError(qs.eIn);
-      if(!q.is(index))
-        return this.em.selectionStart;
-      this.em.setSelectionRange(index, index);
-      return this;
-    },
-    selection: function(begin, end) {
-      if(!(this.em instanceof HTMLInputElement))
-        throw new TypeError(qs.eIn);
-      if(!q.is(begin))
-        return [this.em.selectionStart, this.em.selectionEnd];
-      if(!q.is(end))
-        this.em.setSelectionRange(begin, begin);
-      else
-        this.em.setSelectionRange(begin, end);
-      return this;
-    },
-    firstChild: {get: function() {
-      return newq(this.em.firstElementChild);
-    }},
-    firstNodeChild: {get: function() {
-      return newq(this.em.firstChild);
-    }},
-    lastChild: {get: function() {
-      return newq(this.em.lastElementChild);
-    }},
-    lastNodeChild: {get: function() {
-      return newq(this.em.lastChild);
-    }},
-    parent: {get: function() {
-      return newq(this.em.parentElement);
-    }},
-    parentNode: {get: function() {
-      return newq(this.em.parentNode);
-    }},
-    height: {get: function() {
-      return this.em.offsetHeight;
-    }},
-    width: {get: function() {
-      return this.em.offsetWidth;
-    }},
-    clientHeight: {get: function() {
-      return this.em.clientHeight;
-    }},
-    clientWidth: {get: function() {
-      return this.em.clientWidth;
-    }},
-    outerHeight: {get: function() {
-      var c = this.computedStyle(), h = this.em.offsetHeight;
-      // Add padding and border
-      if(c['box-sizing'] == 'content-box') {
-        h += parseFloat(c['padding-top']) + parseFloat(c['padding-bottom']) + parseFloat(c['border-top-width']) + parseFloat(c['border-bottom-width']);
-      }
-      return h += parseFloat(c['margin-top']) + parseFloat(c['margin-bottom']);
-    }},
-    outerWidth: {get: function() {
-      var c = this.computedStyle(), h = this.em.offsetWidth;
-      // Add padding and border
-      if(c['box-sizing'] == 'content-box') {
-        h += parseFloat(c['padding-left']) + parseFloat(c['padding-right']) + parseFloat(c['border-left-width']) + parseFloat(c['border-right-width']);
-      }
-      return h += parseFloat(c['margin-left']) + parseFloat(c['margin-right']);
-    }},
-    style: function(propname) {
-      if(!q.is(propname)) return this.em.style;
-      if(typeof(propname) == qs.to) {
-        var keys = propname.getKeys();
-        for(var i=0; i<keys.length; i++)
-          // Use browser-specific alias if property name is not valid
-          this.em.style[!(keys[i] in qs.styles) && keys[i] in qs.styleAliases ? qs.styleAliases[keys[i]] : keys[i]] = css(propname[keys[i]]);
-        return this;
-      }
-      if(!(1 in arguments)) return this.em.style[propname];
-      // TODO: Create structure for every css property, to automate types
-      var str = css(arguments[1]);
-      for(var i=2; i<arguments.length; i++)
-        str += ' ' + css(arguments[i]);
-
-      // Use broswer-specific alias if property name is not valid
-      if(qs.styles && !(propname in qs.styles) && (propname in qs.styleAliases))
-        this.em.style[qs.styleAliases[propname]] = str;
-      else
-        this.em.style[propname] = str;
-      return this;
-    },
-    computedStyle: function(propname) {
-      if(propname)
-        return getComputedStyle(this.em)[propname];
-      return getComputedStyle(this.em);
-    },
-    validity: function(type) {
-      if(!q.is(type))
-        return this.em.validity;
-      this.em.setCustomValidity(type);
-      return this;
-    },
-    selected: function(i) {
-      if(!(this.em instanceof HTMLSelectElement))
-        throw new TypeError(qs.eSe);
-      if(!q.is(i))
-        return this.em.selectedIndex;
-      this.em.selectedIndex = 0;
-      return this;
-    },
-    clearChildren: function() {
-      while(this.em.children.length > 0)
-        this.em.removeChild(this.em.firstChild);
-      return this;
-    },
-    hasChildren: {get: function() {
-      return this.em.children.length > 0;
-    }},
-    focus: function() {
-      this.em.focus();
-      return this;
-    },
-    blur: function() {
-      this.em.blur();
-      return this;
-    },
-    attr: function(key, value) {
-      if(!q.is(value))
-        return this.em.getAttribute(key);
-      this.em.setAttribute(key, value);
-      return this;
-    },
-    hasExtension: function(key) {
-      if(typeof(this.em.extensions) != qs.to || !('extensions' in this.em))
-        return false;
-      return key in this.em.extensions;
-    },
-    extendEm: function(key, value) {
-      if(typeof(this.em.extensions) != qs.to || !('extensions' in this.em))
-        this.em.extensions = {};
-      if(!q.is(value))
-        return this.em.extensions[key];
-      this.em.extensions[key] = value;
-      return this;
-    },
-    href: function(value, addListener) {
-      if(!q.is(value))
-        return this.em.getAttribute('href');
-      this.em.setAttribute('href', value);
-      if((addListener || (addListener == undefined && !(this.em instanceof HTMLAnchorElement))) && !('anchorEmulator' in this.on('click').names)) {
-        var t = this.em;
-        this.on('click', function anchorEmulator() {
-          location.pathname = t.getAttribute('href');
-        });
+    }
+    if(child instanceof Array) {
+      for(var i=0; i<child.length; i++) {
+        if(!qelement.is(child[i]))
+        throw new TypeError(qs.eNdOrList);
+        this.em.removeChild(child[i].em || child[i]);
       }
       return this;
-    },
-    scroll: function(x, y) {
-      if(!q.is(x) && !q.is(y))
-        return {x: this.em.scrollLeft, y: this.em.scrollTop};
-      if(x != null)
-        this.em.scrollLeft = x;
-      if(y != null)
-        this.em.scrollTop = y;
+    }
+    if(typeof(child) == qs.tn) {
+      this.em.removeChild(this.em.children[child]);
       return this;
-    },
-    clientRect: {get: function() {
-      return this.em.getBoundingClientRect();
-    }},
-    offsetBottom: {get: function() {
-      return this.em.offsetBottom;
-    }},
-    offsetTop: {get: function() {
-      return this.em.offsetTop;
-    }},
-    offsetLeft: {get: function() {
-      return this.em.offsetLeft;
-    }},
-    offsetRight: {get: function() {
-      return this.em.offsetRight;
-    }},
-  });
+    }
+    throw new TypeError(qs.eNdOrList);
+  },
+  hasSelection: {get: function() {
+    if(!(this.em instanceof HTMLInputElement))
+    throw new TypeError(qs.eIn);
+    if(this.em.selectionStart == this.em.selectionEnd)
+    return false;
+    return true;
+  }},
+  cursor: function(index) {
+    if(!(this.em instanceof HTMLInputElement))
+    throw new TypeError(qs.eIn);
+    if(!q.is(index))
+    return this.em.selectionStart;
+    this.em.setSelectionRange(index, index);
+    return this;
+  },
+  selection: function(begin, end) {
+    if(!(this.em instanceof HTMLInputElement))
+    throw new TypeError(qs.eIn);
+    if(!q.is(begin))
+    return [this.em.selectionStart, this.em.selectionEnd];
+    if(!q.is(end))
+    this.em.setSelectionRange(begin, begin);
+    else
+    this.em.setSelectionRange(begin, end);
+    return this;
+  },
+  firstChild: {get: function() {
+    return newq(this.em.firstElementChild);
+  }},
+  firstNodeChild: {get: function() {
+    return newq(this.em.firstChild);
+  }},
+  lastChild: {get: function() {
+    return newq(this.em.lastElementChild);
+  }},
+  lastNodeChild: {get: function() {
+    return newq(this.em.lastChild);
+  }},
+  parent: {get: function() {
+    return newq(this.em.parentElement);
+  }},
+  parentNode: {get: function() {
+    return newq(this.em.parentNode);
+  }},
+  height: {get: function() {
+    return this.em.offsetHeight;
+  }},
+  width: {get: function() {
+    return this.em.offsetWidth;
+  }},
+  clientHeight: {get: function() {
+    return this.em.clientHeight;
+  }},
+  clientWidth: {get: function() {
+    return this.em.clientWidth;
+  }},
+  outerHeight: {get: function() {
+    var c = this.computedStyle(), h = this.em.offsetHeight;
+    // Add padding and border
+    if(c['box-sizing'] == 'content-box') {
+      h += parseFloat(c['padding-top']) + parseFloat(c['padding-bottom']) + parseFloat(c['border-top-width']) + parseFloat(c['border-bottom-width']);
+    }
+    return h += parseFloat(c['margin-top']) + parseFloat(c['margin-bottom']);
+  }},
+  outerWidth: {get: function() {
+    var c = this.computedStyle(), h = this.em.offsetWidth;
+    // Add padding and border
+    if(c['box-sizing'] == 'content-box') {
+      h += parseFloat(c['padding-left']) + parseFloat(c['padding-right']) + parseFloat(c['border-left-width']) + parseFloat(c['border-right-width']);
+    }
+    return h += parseFloat(c['margin-left']) + parseFloat(c['margin-right']);
+  }},
+  style: function(propname) {
+    if(!q.is(propname)) return this.em.style;
+    if(typeof(propname) == qs.to) {
+      var keys = propname.getKeys();
+      for(var i=0; i<keys.length; i++)
+      // Use browser-specific alias if property name is not valid
+      this.em.style[!(keys[i] in qs.styles) && keys[i] in qs.styleAliases ? qs.styleAliases[keys[i]] : keys[i]] = css(propname[keys[i]]);
+      return this;
+    }
+    if(!(1 in arguments)) return this.em.style[propname];
+    // TODO: Create structure for every css property, to automate types
+    var str = css(arguments[1]);
+    for(var i=2; i<arguments.length; i++)
+    str += ' ' + css(arguments[i]);
 
-  // TODO: Aliases
-  qelement.prototype.extend({
-    c: qelement.prototype.children,
-    cc: {get:function(){return this.em.children.length}},
-    hc: {get:function(){return this.em.children.length > 0}},
+    // Use broswer-specific alias if property name is not valid
+    if(qs.styles && !(propname in qs.styles) && (propname in qs.styleAliases))
+    this.em.style[qs.styleAliases[propname]] = str;
+    else
+    this.em.style[propname] = str;
+    return this;
+  },
+  computedStyle: function(propname) {
+    if(propname)
+    return getComputedStyle(this.em)[propname];
+    return getComputedStyle(this.em);
+  },
+  validity: function(type) {
+    if(!q.is(type))
+    return this.em.validity;
+    this.em.setCustomValidity(type);
+    return this;
+  },
+  selected: function(i) {
+    if(!(this.em instanceof HTMLSelectElement))
+    throw new TypeError(qs.eSe);
+    if(!q.is(i))
+    return this.em.selectedIndex;
+    this.em.selectedIndex = 0;
+    return this;
+  },
+  clearChildren: function() {
+    while(this.em.children.length > 0)
+    this.em.removeChild(this.em.firstChild);
+    return this;
+  },
+  hasChildren: {get: function() {
+    return this.em.children.length > 0;
+  }},
+  focus: function() {
+    this.em.focus();
+    return this;
+  },
+  blur: function() {
+    this.em.blur();
+    return this;
+  },
+  attr: function(key, value) {
+    if(!q.is(value))
+    return this.em.getAttribute(key);
+    this.em.setAttribute(key, value);
+    return this;
+  },
+  hasExtension: function(key) {
+    if(typeof(this.em.extensions) != qs.to || !('extensions' in this.em))
+    return false;
+    return key in this.em.extensions;
+  },
+  extendEm: function(key, value) {
+    if(typeof(this.em.extensions) != qs.to || !('extensions' in this.em))
+    this.em.extensions = {};
+    if(!q.is(value))
+    return this.em.extensions[key];
+    this.em.extensions[key] = value;
+    return this;
+  },
+  href: function(value, addListener) {
+    if(!q.is(value))
+    return this.em.getAttribute('href');
+    this.em.setAttribute('href', value);
+    if((addListener || (addListener == undefined && !(this.em instanceof HTMLAnchorElement))) && !('anchorEmulator' in this.on('click').names)) {
+      var t = this.em;
+      this.on('click', function anchorEmulator() {
+        location.pathname = t.getAttribute('href');
+      });
+    }
+    return this;
+  },
+  scroll: function(x, y) {
+    if(!q.is(x) && !q.is(y))
+    return {x: this.em.scrollLeft, y: this.em.scrollTop};
+    if(x != null)
+    this.em.scrollLeft = x;
+    if(y != null)
+    this.em.scrollTop = y;
+    return this;
+  },
+  clientRect: {get: function() {
+    return this.em.getBoundingClientRect();
+  }},
+  offsetBottom: {get: function() {
+    return this.em.offsetBottom;
+  }},
+  offsetTop: {get: function() {
+    return this.em.offsetTop;
+  }},
+  offsetLeft: {get: function() {
+    return this.em.offsetLeft;
+  }},
+  offsetRight: {get: function() {
+    return this.em.offsetRight;
+  }},
+});
 
-    fc: {get:function(){return newq(this.em.firstElementChild)}},
-    lc: {get:function(){return newq(this.em.lastElementChild)}},
-    fnc: {get:function(){return newq(this.em.firstChild)}},
-    lnc: {get:function(){return newq(this.em.lastChild)}},
+// TODO: Aliases
+qelement.prototype.extend({
+  c: qelement.prototype.children,
+  cc: {get:function(){return this.em.children.length}},
+  hc: {get:function(){return this.em.children.length > 0}},
 
-    p: {get:function(){return newq(this.em.parentElement)}},
-    pn: {get:function(){return newq(this.em.parentNode)}},
+  fc: {get:function(){return newq(this.em.firstElementChild)}},
+  lc: {get:function(){return newq(this.em.lastElementChild)}},
+  fnc: {get:function(){return newq(this.em.firstChild)}},
+  lnc: {get:function(){return newq(this.em.lastChild)}},
 
-    ns: {get:function(){return newq(this.em.nextElementSibling)}},
-    nns: {get:function(){return newq(this.em.nextSibling)}},
-    ps: {get:function(){return newq(this.em.previousElementSibling)}},
-    pns: {get:function(){return newq(this.em.previousSibling)}},
+  p: {get:function(){return newq(this.em.parentElement)}},
+  pn: {get:function(){return newq(this.em.parentNode)}},
 
-    a: qelement.prototype.append,
-    rm: qelement.prototype.remove,
-    d: qelement.prototype.detach,
-    i: qelement.prototype.insertAt,
+  ns: {get:function(){return newq(this.em.nextElementSibling)}},
+  nns: {get:function(){return newq(this.em.nextSibling)}},
+  ps: {get:function(){return newq(this.em.previousElementSibling)}},
+  pns: {get:function(){return newq(this.em.previousSibling)}},
 
-    cls: qelement.prototype.classes,
-    cl: qelement.prototype.class,
-    tcl: qelement.prototype.togClass,
-    acl: qelement.prototype.addClass,
-    rcl: qelement.prototype.remClass,
+  a: qelement.prototype.append,
+  rm: qelement.prototype.remove,
+  d: qelement.prototype.detach,
+  i: qelement.prototype.insertAt,
 
-    t: qelement.prototype.text,
-    s: qelement.prototype.style,
-    cs: qelement.prototype.computedStyle,
-    at: qelement.prototype.attr,
+  cls: qelement.prototype.classes,
+  cl: qelement.prototype.class,
+  tcl: qelement.prototype.togClass,
+  acl: qelement.prototype.addClass,
+  rcl: qelement.prototype.remClass,
 
-    f: qelement.prototype.focus,
-    b: qelement.prototype.blur,
+  t: qelement.prototype.text,
+  s: qelement.prototype.style,
+  cs: qelement.prototype.computedStyle,
+  at: qelement.prototype.attr,
 
-    sel: qelement.prototype.selected,
-    cur: qelement.prototype.cursor,
-    v: qelement.prototype.validity,
+  f: qelement.prototype.focus,
+  b: qelement.prototype.blur,
 
-    h: {get:function(){return this.em.offsetHeight}},
-    w: {get:function(){return this.em.offsetWidth}},
-    ch: {get:function(){return this.em.clientHeight}},
-    cw: {get:function(){return this.em.clientWidth}},
-    oh: {get:function(){return this.outerHeight}},
-    ow: {get:function(){return this.outerWidth}},
+  sel: qelement.prototype.selected,
+  cur: qelement.prototype.cursor,
+  v: qelement.prototype.validity,
 
-    ot: {get:function(){return this.em.offsetTop}},
-    ob: {get:function(){return this.em.offsetBottom}},
-    or: {get:function(){return this.em.offsetRight}},
-    ol: {get:function(){return this.em.offsetLeft}},
-    cr: {get:function(){return this.em.getBoundingClientRect()}},
+  h: {get:function(){return this.em.offsetHeight}},
+  w: {get:function(){return this.em.offsetWidth}},
+  ch: {get:function(){return this.em.clientHeight}},
+  cw: {get:function(){return this.em.clientWidth}},
+  oh: {get:function(){return this.outerHeight}},
+  ow: {get:function(){return this.outerWidth}},
 
-    he: qelement.prototype.hasExtension,
-    ee: qelement.prototype.extendEm,
-  });
+  ot: {get:function(){return this.em.offsetTop}},
+  ob: {get:function(){return this.em.offsetBottom}},
+  or: {get:function(){return this.em.offsetRight}},
+  ol: {get:function(){return this.em.offsetLeft}},
+  cr: {get:function(){return this.em.getBoundingClientRect()}},
 
-  return qelement;
+  he: qelement.prototype.hasExtension,
+  ee: qelement.prototype.extendEm,
+});
+
+return qelement;
 })();
+}
 
 var qlist = (function() {
   var setfunc;
@@ -2210,14 +2226,20 @@ q.onready(function() {
   }
 })(q.registerEventHandlers);
 
-document.addEventListener('DOMContentLoaded', function() {
-  q.onready('DOMContentLoaded');
-  q.defineProperty('loaded', {value: true});
-});
-document.addEventListener('load', function() {
-  if(!q.loaded) {
-    q.onready('load');
-    q.onload();
+if(isBrowser) {
+  document.addEventListener('DOMContentLoaded', function() {
+    q.onready('DOMContentLoaded');
     q.defineProperty('loaded', {value: true});
-  }
-})
+  });
+  document.addEventListener('load', function() {
+    if(!q.loaded) {
+      q.onready('load');
+      q.onload();
+      q.defineProperty('loaded', {value: true});
+    }
+  });
+} else {
+  q.onready('load');
+  q.onload();
+  q.defineProperty('loaded', {value: true});
+}
