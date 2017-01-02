@@ -71,6 +71,9 @@ var qPromise = (function() {
     function NewPromise(onResolve) {
       return NewPromise.then(onResolve, null, 1);
     }
+
+    NewPromise.__proto__ = this.__proto__; // Extend returned object to be this
+
     NewPromise.then = function(onResolve, onReject, callAfterThis) {
       onResolve = onResolve || function(o, j, n) {o(n);};
       onReject = onReject || function(o, j, n) {j(n);};
@@ -112,8 +115,6 @@ var qPromise = (function() {
     (function(next) {a(function() {
       executor(createF(next, o, true), createF(next, j, true));
     })})(next);
-
-    NewPromise.__proto__ = this.__proto__; // Extend returned object to be this
 
     return NewPromise;
   }
@@ -505,6 +506,9 @@ var qevent = (function() {
           return event.t.apply(undefined, arguments); // Trigger
       }
     }
+
+    event.__proto__ = this.__proto__; // Extend returned object to this
+
     event.extend({
       triggered: {get: function() {
         return triggered;
@@ -574,7 +578,6 @@ var qevent = (function() {
       clr: event.clear,
     });
 
-    event.__proto__ = this.__proto__; // Extend returned object to this
     return event;
   }
   return qevent
@@ -1834,6 +1837,9 @@ var qlist = (function() {
       return ret;
     }
 
+    // Make sure returned object extends this
+    ret.__proto__ = this.__proto__;
+
     // Custom methods
     ret.extend({
       copy: function() {
@@ -2105,10 +2111,8 @@ var qlist = (function() {
           }
         })
       }
-    })()
+    })();
 
-    // Make sure returned object extends this
-    ret.__proto__ = this.__proto__;
     return ret;
   }
 
