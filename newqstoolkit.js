@@ -1,5 +1,5 @@
 /*
-  Q's JavaScript Toolkit v1.0.3b
+  Q's JavaScript Toolkit v1.1.0b
   A generic alternative to jQuery, allowing some amazing chaining.
   Instructions for compressing:
     Make sure all functions have aliases
@@ -673,8 +673,9 @@ var qc = (function() {
     if(selector instanceof HTMLElement)
       return tocache(newq(selector), selector, extraTime, (options && options.searchIn) || null);
     if(qlist.is(selector))
-      return tocache(qlist.from(selector), selector, extraTime, (options && options.searchIn) || null);
-    if(typeof(selector) != qs.ts) throw new TypeError(qs.eSelOrEm);
+      return tocache(qelement.fromNodes(selector), selector, extraTime, (options && options.searchIn) || null);
+    if(typeof(selector) != qs.ts)
+      throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
     if(selector[0] == '#' && selector.substr(1).toLowerCase().containsOnly(qs.fId))
       return tocache(newq(search.getElementById(selector.substr(1))), selector, extraTime, (options && options.searchIn) || null);
@@ -714,7 +715,7 @@ var q = (function() {
     if(selector instanceof HTMLElement)
       return newq(selector);
     if(qlist.is(selector))
-      return new qelist(selector);
+      return qelement.fromNodes(selector);
     if(typeof(selector) != qs.ts)
       throw new TypeError(qs.eSelOrEm);
     // getElementById shortcut
@@ -828,7 +829,7 @@ var q = (function() {
     registerEventHandlers: function(searchIn) {
       var ems = q('*[qclick]', {searchIn: searchIn, forceList: true});
       for(var i=0; i<ems.length; i++)
-        ems[i].on('click', window[ems[i].attr('qclick')]);
+        ems(i).on('click', window[ems(i).attr('qclick')]);
     },
     is: function() {
       var alen = arguments.length;
