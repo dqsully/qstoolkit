@@ -334,6 +334,22 @@ window.on = function(name, func, callNow) {
   this.events[name].add(func);
   return this;
 }
+document.events = [];
+document.on = function(name, func, callNow) {
+  if(typeof(name) == qs.to) {
+    for(var i=0; i<name.length; i++)
+      this.on(name[i], func, callNow);
+    return this;
+  }
+  if(!(name in this.events))
+    this.events[name] = new qevent({'attachTo': this, 'name': name});
+  if(!q.is(func))
+    return this.events[name];
+  if(callNow)
+    func();
+  this.events[name].add(func);
+  return this;
+}
 
 const qs = {
   eNd: 'Not a valid qelement or Node',
