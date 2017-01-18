@@ -2318,18 +2318,27 @@ q.onready(function() {
 
 if(isBrowser) {
   document.addEventListener('DOMContentLoaded', function() {
-    q.onready('DOMContentLoaded');
-    q.defineProperty('loaded', {value: true});
+    q.onready.t('DOMContentLoaded');
+    q.defineProperty('ready', {value: true});
+    q.defineProperty('r', {value: true});
   });
   document.addEventListener('load', function() {
-    if(!q.loaded) {
-      q.onready('load');
-      q.onload();
-      q.defineProperty('loaded', {value: true});
+    if(!q.ready) {
+      q.onready.t('load');
+      q.defineProperty('ready', {value: true});
+      q.defineProperty('r', {value: true});
     }
   });
+  window.addEventListener('load', function() {
+    q.onload.t('load')
+    q.defineProperty('loaded', {value: true});
+    q.defineProperty('l', {value: true});
+  })
 } else {
-  q.onready('load');
-  q.onload();
+  q.onready.t('auto');
+  q.onload.t('auto');
+  q.defineProperty('ready', {value: true});
+  q.defineProperty('r', {value: true});
   q.defineProperty('loaded', {value: true});
+  q.defineProperty('l', {value: true});
 }
