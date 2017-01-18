@@ -578,8 +578,10 @@ var qevent = (function() {
           throw new RangeError(qs.eORng);
         handlers[id] = undefined;
         names[names.keyOf(id)] = undefined;
-        if('attachTo' in options)
+        if('attachTo' in options) {
           (options.attachTo.em || options.attachTo).removeEventListener(options.name, nativeHandlers[id]);
+          nativeHandlers[id] = undefined;
+        }
       },
       clear: function() {
         var keys = handlers.getKeys();
