@@ -469,7 +469,7 @@ var qevent = (function() {
   /*
     Options:
       attachTo - element to attach to
-      name - name of evento n element to attach to
+      name - name of event on element to attach to
       once - trigger only once?
       */
   function qevent(options) {
@@ -1346,72 +1346,72 @@ if(isBrowser) {
           transition: '0s'
         }, sensor, expand, expandChild, shrink, reset, pw, ph, called = false, shouldCall = true, first = 2;
         me.extendEm('resizeSensor',
-        sensor = me.a('div')
-        .classes('resize-sensor')
-        .style(style)
-        .a(expand = newq('div')
-        .classes('resize-sensor-expand')
-        .style(style)
-        .a(expandChild = newq('div')
-        .style(styleChild)
-        .style({
-          width: 100000,
-          height: 100000
-        })
-      )
-    ).a(shrink = newq('div')
-    .classes('resize-sensor-shrink')
-    .style(style)
-    .a(newq('div')
-    .style(styleChild)
-    .style({
-      width: '200%',
-      height: '200%',
-    })
-  )
-)
-);
+          sensor = me.a('div')
+            .classes('resize-sensor')
+            .style(style)
+            .a(expand = newq('div')
+              .classes('resize-sensor-expand')
+              .style(style)
+              .a(expandChild = newq('div')
+                .style(styleChild)
+                .style({
+                  width: 100000,
+                  height: 100000
+                })
+              )
+            ).a(shrink = newq('div')
+              .classes('resize-sensor-shrink')
+              .style(style)
+              .a(newq('div')
+                .style(styleChild)
+                .style({
+                  width: '200%',
+                  height: '200%',
+                })
+              )
+            )
+        );
 
-if(me.computedStyle('position') == 'static')
-me.style('position', 'relative');
-shrink.scroll(100000, 1000000);
-expand.scroll(100000, 1000000);
+        if(me.computedStyle('position') == 'static')
+          me.style('position', 'relative');
+        shrink.scroll(100000, 1000000);
+        expand.scroll(100000, 1000000);
 
-function onScroll(e) {
-  if(first) {
-    first--;
-    return;
-  }
-  if(!shouldCall) {
-    shouldCall = true;
-    return;
-  }
-  if((me.width != pw || me.height != ph) && !called) {
-    window.requestAnimationFrame(function() {
-      ev.t({
-        width: pw = me.width,
-        height: ph = me.height
-      });
-      called = false;
-    })
-    switch(e.target.className) {
-      case 'resize-sensor-expand':
-        shrink.scroll(100000, 100000);
-        break;
-      case 'resize-sensor-shrink':
-        expand.scroll(100000, 100000);
-        break;
-    }
-    called = true;
-    shouldCall = false;
-  }
-}
-expand.on('scroll', onScroll);
-shrink.on('scroll', onScroll);
-return function destroy() {
-  sensor.detach();
-}
-}
+        function onScroll(e) {
+          if(first) {
+            first--;
+            return;
+          }
+          if(!shouldCall) {
+            shouldCall = true;
+            return;
+          }
+          if((me.width != pw || me.height != ph) && !called) {
+            window.requestAnimationFrame(function() {
+              ev.t({
+                width: pw = me.width,
+                height: ph = me.height
+              });
+              called = false;
+            })
+            switch(e.target.className) {
+              case 'resize-sensor-expand':
+                shrink.scroll(100000, 100000);
+                break;
+              case 'resize-sensor-shrink':
+                expand.scroll(100000, 100000);
+                break;
+            }
+            called = true;
+            shouldCall = false;
+          }
+        }
+        expand.on('scroll', onScroll);
+        shrink.on('scroll', onScroll);
+        return function destroy() {
+          sensor.detach();
+        }
+      }
 };
 qelement.prototype.extend({
   on: function(name, func, callNow) {
@@ -1441,8 +1441,9 @@ qelement.prototype.extend({
   // Destroy event
   non: function(name) {
     if(name in this.em.events) {
-      if(name in this.em.devents[name]) this.em.devents[name]();
-        this.em.events[name].clear();
+      if(name in this.em.devents[name])
+        this.em.devents[name]();
+      this.em.events[name].clear();
       this.em.events[name] = null;
     }
     return this;
